@@ -1,0 +1,94 @@
+{
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
+    "workbench.startupEditor": "none",
+    "window.commandCenter": false,
+    "workbench.layoutControl.enabled": false,
+    "zenMode.hideStatusBar": false,
+    "editor.lineNumbers": "relative",
+
+    "vim.easymotion": true,
+    "vim.leader": "<Space>",
+    "vim.useSystemClipboard": false,
+    "editor.renderWhitespace": "all",
+    "vim.commandLineModeKeyBindings": [],
+    "vim.incsearch": true,
+    "vim.hlsearch": true,
+    "vim.handleKeys": {
+        "<C-a>": false,
+        "<C-f>": false
+    },
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": ["leader", "p"],
+            "commands": ["editor.action.clipboardPasteAction"]
+        },
+        {
+            "before": ["leader", "r", "g"],
+            "commands": ["workbench.view.search"]
+        },
+        {
+            "before": ["leader", "r", "n"],
+            "commands": ["workbench.action.replaceInFiles"]
+        },
+        {
+            "before": ["leader", "s", "f"],
+            "commands": ["workbench.action.quickOpen"]
+        },
+        {
+            "before": ["leader", "Z"],
+            "commands": ["workbench.action.toggleZenMode"]
+        },
+        {
+            "before": ["leader", "K"],
+            "commands": ["editor.action.showDefinitionPreviewHover"]
+        },
+        {
+            "before": ["leader", "g", "d"],
+            "commands": ["editor.action.revealDefinition"]
+        },
+        {
+            "before": ["leader", "g", "r"],
+            "commands": ["editor.action.goToReferences"]
+        },
+        {
+            "before": ["leader", "g", "i"],
+            "commands": ["editor.action.goToImplementation"]
+        },
+        {
+            "before": ["leader", "g", "t"],
+            "commands": ["editor.action.goToTypeDefinition"]
+        },
+        {
+            "before": ["leader", "e"],
+            "commands": ["workbench.actions.workbench.panel.markers.view.toggleErrors"]
+        },
+        {
+            "before": ["leader", "t", "w"],
+            "commands": ["editor.action.toggleWordWrap"]
+        }
+    ],
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": ["leader", "y"],
+            "commands": ["editor.action.clipboardCopyAction"],
+            "after": ["y", "<esc>"]
+        },
+        {
+            "before": ["J"],
+            "commands": ["editor.action.moveLinesDownAction"]
+        },
+        {
+            "before": ["K"],
+            "commands": ["editor.action.moveLinesUpAction"]
+        }
+    ],
+    "vim.insertModeKeyBindings": [
+    ],
+    "vim.statusBarColorControl": true,
+    "workbench.colorCustomizations": {
+        "statusBar.background": "#005f5f",
+        "statusBar.noFolderBackground": "#005f5f",
+        "statusBar.debuggingBackground": "#005f5f"
+    },
+    "workbench.colorTheme": "Catppuccin Frappé"
+}

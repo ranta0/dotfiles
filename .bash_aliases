@@ -6,6 +6,7 @@ alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias :q=exit
+alias pj=". proj"
 
 # ls after cd
 cd() {
