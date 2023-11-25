@@ -7,6 +7,7 @@ alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias :q=exit
 alias pj=". proj"
+alias reset="clear && printf '\e[3J'"
 
 # ls after cd
 cd() {
