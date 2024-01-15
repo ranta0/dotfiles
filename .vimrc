@@ -4,7 +4,7 @@ set relativenumber
 set tabstop=4
 set shiftwidth=4
 set expandtab
-" set smarttab
+set smarttab
 
 set ai
 set si
@@ -41,6 +41,9 @@ xnoremap K :m<space>'<-2<CR>gv
 vnoremap <silent> > >gv
 vnoremap <silent> < <gv
 nnoremap Q <nop>
+" 's goes back to the starting search
+nnoremap / ms/
+nnoremap ? ms?
 
 " tools
 nnoremap tr :%s///gn<CR>``cgn
@@ -49,3 +52,7 @@ nnoremap tR :%s///gn<CR>``cgN
 nnoremap th :set hls!<CR>
 nnoremap tw :set wrap!<CR>
 nnoremap tn :set relativenumber!<CR>
+vnoremap T :s/\s\+$//e<LEFT><CR>
+
+" coding
+inoremap <C-o> {<Cr>}<Esc>O
