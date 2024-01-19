@@ -44,6 +44,10 @@ nnoremap Q <nop>
 " 's goes back to the starting search
 nnoremap / ms/
 nnoremap ? ms?
+nnoremap gf <C-w>gf
+nnoremap <C-t> :tabnew<CR>
+nnoremap <C-l> gt
+nnoremap <C-h> gT
 
 " tools
 nnoremap tr :%s///gn<CR>``cgn
