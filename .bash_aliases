@@ -8,8 +8,14 @@ alias .....="cd ../../../.."
 alias :q=exit
 alias pj=". proj"
 alias reset="clear && printf '\e[3J'"
+alias tmux="tmux -u"
 
 # ls after cd
 cd() {
     builtin cd "$@" && ls -lA
+}
+
+# new session
+tnew() {
+    tmux -u new -s "$0"
 }

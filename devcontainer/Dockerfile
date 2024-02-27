@@ -1,4 +1,5 @@
-FROM debian:stable-slim
+# Can I go smaller?
+FROM debian:11
 
 ARG DEST=/usr/local/bin
 
@@ -82,6 +83,11 @@ RUN curl -fsSL "https://deb.nodesource.com/setup_$NODE_VERSION.x" | bash - && ap
 RUN npm install -g \
   eslint \
   prettier
+
+# glow - terminal md renderer
+ARG GLOW_VERSION=1.5.1
+RUN curl -sLO "https://github.com/charmbracelet/glow/releases/download/v${GLOW_VERSION}/glow_${GLOW_VERSION}_amd64.deb" \
+  && dpkg -i "./glow_${GLOW_VERSION}_amd64.deb"
 
 # Set up user
 ARG USERNAME=dev
