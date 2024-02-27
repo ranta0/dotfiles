@@ -1,19 +1,23 @@
 version: "3"
 services:
-  dev:
-    build: .
+  base:
+    build:
+      context: .
+      args:
+        USERNAME: test-dev
     stdin_open: true
     tty: true
     # restart: unless-stopped
     volumes:
-      - /home/ranta/.ssh:/home/dev/.ssh
-      - /home/ranta/.tmux.conf:/home/dev/.tmux.conf
-      - /home/ranta/.bashrc:/home/dev/.bashrc
-      - /home/ranta/.bash_aliases:/home/dev/.bash_aliases
-      - /home/ranta/.config:/home/dev/.config
-      - /home/ranta/github:/home/dev/work
-      - /home/ranta/media:/home/dev/media
+      - /home/ranta/.ssh:/home/test-dev/.ssh
+      - /home/ranta/.tmux.conf:/home/test-dev/.tmux.conf
+      - /home/ranta/.bashrc:/home/test-dev/.bashrc
+      - /home/ranta/.bash_aliases:/home/test-dev/.bash_aliases
+      # - /home/ranta/.config:/home/test-dev/.config
+      - /home/ranta/github:/home/test-dev/work
+      - /home/ranta/media:/home/test-dev/media
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "9004:9004"
+      - "9004:9004" # php debug
+      - "8000:8010"
