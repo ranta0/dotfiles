@@ -1,0 +1,19 @@
+version: "3"
+services:
+  dev:
+    build: .
+    stdin_open: true
+    tty: true
+    # restart: unless-stopped
+    volumes:
+      - /home/ranta/.ssh:/home/dev/.ssh
+      - /home/ranta/.tmux.conf:/home/dev/.tmux.conf
+      - /home/ranta/.bashrc:/home/dev/.bashrc
+      - /home/ranta/.bash_aliases:/home/dev/.bash_aliases
+      - /home/ranta/.config:/home/dev/.config
+      - /home/ranta/github:/home/dev/work
+      - /home/ranta/media:/home/dev/media
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9004:9004"
