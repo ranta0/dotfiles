@@ -97,15 +97,3 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 
 export PATH="${GOPATH-"/usr/local/go"}/bin:$PATH"
 export PATH="${GOPATH-"~/go"}/bin:$PATH"
-
-export ANDROID_HOME=/home/ranta/Android/Sdk
-export PATH=$PATH:$ANDROID_HOME/emulator
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-
-# pnpm
-export PNPM_HOME="/home/ranta/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
