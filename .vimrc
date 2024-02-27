@@ -53,10 +53,7 @@ nnoremap <C-h> gT
 nnoremap tr :%s///gn<CR>``cgn
 nnoremap tR :%s///gn<CR>``cgN
 
-nnoremap th :set hls!<CR>
-nnoremap tw :set wrap!<CR>
-nnoremap tn :set relativenumber!<CR>
-vnoremap T :s/\s\+$//e<LEFT><CR>
-
-" coding
-inoremap <C-o> {<Cr>}<Esc>O
+" nnoremap th :set hls!<CR>
+" nnoremap tw :set wrap!<CR>
+" nnoremap tn :set relativenumber!<CR>
+" vnoremap T :s/\s\+$//e<LEFT><CR>
