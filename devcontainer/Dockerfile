@@ -1,5 +1,5 @@
 # Can I go smaller?
-FROM debian:11-slim as base
+FROM debian:11-slim
 
 ARG DEST=/usr/local/bin
 ARG WORK_DIR=/tmp
@@ -57,7 +57,6 @@ RUN adduser \
 RUN passwd -d $USERNAME \
   && usermod -aG sudo $USERNAME
 
-FROM base as languages
 ARG PHP_VERSION=8.3
 RUN /bin/sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
   && wget -qO - https://packages.sury.org/php/apt.gpg | apt-key add
@@ -78,18 +77,6 @@ RUN curl -sLo go$GO_VERSION.linux-amd64.tar.gz "https://go.dev//dl/go$GO_VERSION
 # Install Azure CLI
 # RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
-ARG NODE_VERSION=lts
-# Install specific Node.js
-RUN curl -fsSL "https://deb.nodesource.com/setup_$NODE_VERSION.x" | bash - && apt-get install -y nodejs
-# Install nvm manager (maybe)
-# RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash 
-
-# Install global npm modules for Node.js
-RUN npm install -g \
-  eslint \
-  prettier
-
-FROM languages as tools
 # Compile nvim
 # RUN git clone https://github.com/neovim/neovim \
 #   && cd neovim \
@@ -113,6 +100,21 @@ RUN rm -rf /tmp/\* /var/tmp/*
 USER $USERNAME
 WORKDIR /home/$USERNAME
 ENV TERM xterm-256color
+
+ENV NVM_DIR=/home/$USERNAME/.nvm 
+ENV NODE_VERSION=20.10.0
+ARG NVM_VERSION=0.39.7
+# Install nvm with node and npm
+RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
+  && cd .nvm && git checkout v$NVM_VERSION \
+  && . ./nvm.sh \
+  && nvm install v$NODE_VERSION \
+  && nvm alias default v$NODE_VERSION \
+  && nvm use default \
+  && npm install -g \
+  pnpm \
+  eslint \
+  prettier
 
 # Autocompletion
 RUN curl -o ~/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
