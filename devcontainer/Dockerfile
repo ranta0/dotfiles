@@ -12,6 +12,7 @@ RUN apt-get update \
   ca-certificates \
   software-properties-common \
   cron \
+  openssh-client \
   curl \
   gettext \
   sudo \
