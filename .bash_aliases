@@ -17,5 +17,5 @@ cd() {
 
 # new session
 tnew() {
-    tmux -u new -s "$0"
+    tmux -u new -s "$1"
 }
