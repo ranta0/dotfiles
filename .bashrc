@@ -98,4 +98,6 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 export PATH="${GOPATH-"/usr/local/go"}/bin:$PATH"
 export PATH="${GOPATH-"~/go"}/bin:$PATH"
 
+. "$HOME/.cargo/env"
+
 eval "$(zoxide init bash)"

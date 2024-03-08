@@ -27,6 +27,10 @@ set hlsearch
 set incsearch
 set updatetime=50
 
+" thanks to https://github.com/changemewtf/no_plugins/blob/master/no_plugins.vim
+set path+=**
+set wildmenu
+
 " movement
 nnoremap <silent><expr> j v:count == 0 ? 'gj' : 'j'
 nnoremap <silent><expr> k v:count == 0 ? 'gk' : 'k'
