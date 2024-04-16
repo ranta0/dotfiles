@@ -6,9 +6,6 @@ set shiftwidth=4
 set expandtab
 set smarttab
 
-set ai
-set si
-
 set nowrap
 
 set nocompatible
@@ -26,6 +23,7 @@ set showcmd
 set hlsearch
 set incsearch
 set updatetime=50
+set isfname+=@-@
 
 " thanks to https://github.com/changemewtf/no_plugins/blob/master/no_plugins.vim
 set path+=**
@@ -39,7 +37,6 @@ nnoremap <C-u> <C-u>zz
 nnoremap J mzJ`z
 nnoremap n nzzzv
 nnoremap N Nzzzv
-nnoremap <C-a> ggVG<cr>
 xnoremap J :m<space>'>+1<CR>gv
 xnoremap K :m<space>'<-2<CR>gv
 vnoremap <silent> > >gv
@@ -52,12 +49,23 @@ nnoremap gf <C-w>gf
 nnoremap <C-t> :tabnew<CR>
 nnoremap <C-l> gt
 nnoremap <C-h> gT
+nnoremap <C-k> :cn<CR>zz
+nnoremap <C-j> :cp<CR>zz
 
 " tools
 nnoremap tr :%s///gn<CR>``cgn
 nnoremap tR :%s///gn<CR>``cgN
 
-" nnoremap th :set hls!<CR>
-" nnoremap tw :set wrap!<CR>
-" nnoremap tn :set relativenumber!<CR>
-" vnoremap T :s/\s\+$//e<LEFT><CR>
+let mapleader = " "
+
+nnoremap <leader><C-k> :lnext<CR>zz
+nnoremap <leader><C-j> :lprevious<CR>zz
+
+nnoremap <leader>th :set hls!<CR>
+nnoremap <leader>tw :set wrap!<CR>
+nnoremap <leader>tn :set relativenumber!<CR>
+nnoremap <leader>- :Ex<CR>
+
+vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
+
+xnoremap <leader>y "+y
