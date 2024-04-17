@@ -19,11 +19,6 @@ set wildmenu
 set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 
 set nobackup noswapfile
-if version >= 703
-    silent !mkdir -p $HOME/.vim/undo
-    set undofile undodir=$HOME/.vim/undo 
-endif
-
 set updatetime=50
 
 " movement
@@ -66,3 +61,32 @@ nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 
 xnoremap <leader>y "+y
+
+" extras
+" undo
+let $UNDO_DATA = $HOME . '/.vim/undo'
+if version >= 703
+    silent !mkdir -p $UNDO_DATA
+    set undofile undodir=$UNDO_DATA
+endif
+
+" session
+set sessionoptions=buffers,tabpages,options
+
+autocmd VimEnter * if argc() == 0 | call LoadSession() | endif
+autocmd VimLeave * : call NewSession()
+
+let $SESSION_DATA = $HOME . '/.vim/sessions'
+function NewSession()
+    silent !mkdir -p $SESSION_DATA
+    let dir = substitute(getcwd(), '\/', '_', 'g')
+    execute 'mksession! ' .$SESSION_DATA .'/'. dir
+endfunction
+
+function LoadSession()
+    let dir = substitute(getcwd(), '\/', '_', 'g')
+    let session_file = $SESSION_DATA .'/'. dir
+    if filereadable(session_file)
+        execute 'so ' . session_file
+    endif
+endfunction
