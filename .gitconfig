@@ -1,0 +1,18 @@
+[user]
+	email = ric.espo9@gmail.com
+	name = Riccardo Esposito
+
+[alias]
+	co = checkout
+	st = status
+	rh = reset HEAD
+	rhh = reset --hard HEAD
+	pu = pull
+	up = push
+	tree = log --oneline --decorate --graph
+
+[commit]
+	verbose = true
+
+[pull]
+	rebase = true

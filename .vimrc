@@ -1,33 +1,30 @@
-set nu
-set relativenumber
+" https://github.com/itchyny/dotfiles/blob/main/.vimrc
+if &encoding !=? 'utf-8' | let &termencoding = &encoding | endif
+set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos
+set fileencodings=utf-8,iso-2022-jp-3,euc-jisx0213,cp932,euc-jp,sjis,jis,latin,iso-2022-jp
 
-set tabstop=4
-set shiftwidth=4
-set expandtab
-set smarttab
+set nu relativenumber nowrap
+set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent
 
-set nowrap
+set nohidden autoread
 
-set nocompatible
+set list listchars=eol:¬,tab:▸\ ,trail:·
+set hlsearch incsearch
 
-set list
-set listchars=eol:¬,tab:▸\ ,trail:·
-
-set autoread
-
-set nobackup
-set nowb
-set noswapfile
-
-set showcmd
-set hlsearch
-set incsearch
-set updatetime=50
-set isfname+=@-@
+set showcmd noruler laststatus=2 statusline=%t\ %=\ %m%r%y%w\ %3l:%-2c
 
 " thanks to https://github.com/changemewtf/no_plugins/blob/master/no_plugins.vim
 set path+=**
 set wildmenu
+set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
+
+set nobackup noswapfile
+if version >= 703
+    silent !mkdir -p $HOME/.vim/undo
+    set undofile undodir=$HOME/.vim/undo 
+endif
+
+set updatetime=50
 
 " movement
 nnoremap <silent><expr> j v:count == 0 ? 'gj' : 'j'
