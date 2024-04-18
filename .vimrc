@@ -19,7 +19,7 @@ set wildmenu
 set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 
 set nobackup noswapfile
-set updatetime=50
+set updatetime=50 lazyredraw ttyfast
 
 " movement
 nnoremap <silent><expr> j v:count == 0 ? 'gj' : 'j'
