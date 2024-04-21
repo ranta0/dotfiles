@@ -26,14 +26,15 @@ nnoremap <silent><expr> j v:count == 0 ? 'gj' : 'j'
 nnoremap <silent><expr> k v:count == 0 ? 'gk' : 'k'
 nnoremap <C-d> <C-d>zz
 nnoremap <C-u> <C-u>zz
-nnoremap J mzJ`z
 nnoremap n nzzzv
 nnoremap N Nzzzv
 xnoremap J :m<space>'>+1<CR>gv
 xnoremap K :m<space>'<-2<CR>gv
 vnoremap <silent> > >gv
 vnoremap <silent> < <gv
+vnoremap $ $h
 nnoremap Q <nop>
+nnoremap gQ <nop>
 " 's goes back to the starting search
 nnoremap / ms/
 nnoremap ? ms?
@@ -56,13 +57,20 @@ nnoremap <leader><C-j> :lprevious<CR>zz
 nnoremap <leader>th :set hls!<CR>
 nnoremap <leader>tw :set wrap!<CR>
 nnoremap <leader>tn :set relativenumber!<CR>
+nnoremap <leader>tp :set paste!<CR>
+" This man is a legend https://github.com/itchyny/dotfiles/blob/main/.vimrc
+nnoremap <silent><expr> tt ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
 nnoremap <leader>- :Ex<CR>
-
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
-
 xnoremap <leader>y "+y
 
 " extras
+" thanks to https://github.com/karoliskoncevicius/oldbook-vim/blob/master/colors/oldbook.vim
+hi DiffAdd ctermbg=72 ctermfg=238 cterm=NONE guibg=#5bb899 guifg=#3c4855 gui=NONE
+hi DiffDelete ctermbg=167 ctermfg=238 cterm=NONE guibg=#db6c6c guifg=#3c4855 gui=NONE
+hi DiffChange ctermbg=238 ctermfg=178 cterm=UNDERLINE guibg=#3c4855 guifg=#d5bc02 gui=UNDERLINE
+hi DiffText ctermbg=178 ctermfg=238 cterm=NONE guibg=#d5bc02 guifg=#3c4855 gui=NONE
+
 " undo
 let $UNDO_DATA = $HOME . '/.vim/undo'
 if version >= 703
