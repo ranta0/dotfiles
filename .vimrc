@@ -59,7 +59,7 @@ nnoremap <leader>tw :set wrap!<CR>
 nnoremap <leader>tn :set relativenumber!<CR>
 nnoremap <leader>tp :set paste!<CR>
 " This man is a legend https://github.com/itchyny/dotfiles/blob/main/.vimrc
-nnoremap <silent><expr> tt ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
+nnoremap <expr> ,d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
@@ -79,7 +79,7 @@ if version >= 703
 endif
 
 " session
-set sessionoptions=buffers,tabpages,options
+set sessionoptions=buffers,tabpages,options,folds
 
 autocmd VimEnter * if argc() == 0 | call LoadSession() | endif
 autocmd VimLeave * : call NewSession()
