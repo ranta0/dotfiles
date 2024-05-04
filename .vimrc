@@ -21,7 +21,7 @@ set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 set nobackup noswapfile
 set updatetime=50 lazyredraw ttyfast
 
-" movement
+" nice to have
 nnoremap <silent><expr> j v:count == 0 ? 'gj' : 'j'
 nnoremap <silent><expr> k v:count == 0 ? 'gk' : 'k'
 nnoremap <C-d> <C-d>zz
@@ -35,29 +35,39 @@ vnoremap <silent> < <gv
 vnoremap $ $h
 nnoremap Q <nop>
 nnoremap gQ <nop>
-" 's goes back to the starting search
-nnoremap / ms/
-nnoremap ? ms?
+
+" tabs
 nnoremap gf <C-w>gf
 nnoremap <C-t> :tabnew<CR>
 nnoremap <C-l> gt
 nnoremap <C-h> gT
+
+" qf
 nnoremap <C-k> :cn<CR>zz
 nnoremap <C-j> :cp<CR>zz
+
+" command
+cnoremap <C-p> <Up>
+cnoremap <C-n> <Down>
 
 " tools
 nnoremap tr :%s///gn<CR>``cgn
 nnoremap tR :%s///gn<CR>``cgN
 
+" leader keys
 let mapleader = " "
 
+" lf
 nnoremap <leader><C-k> :lnext<CR>zz
 nnoremap <leader><C-j> :lprevious<CR>zz
 
+" toggles
 nnoremap <leader>th :set hls!<CR>
 nnoremap <leader>tw :set wrap!<CR>
 nnoremap <leader>tn :set relativenumber!<CR>
 nnoremap <leader>tp :set paste!<CR>
+
+" tools
 " This man is a legend https://github.com/itchyny/dotfiles/blob/main/.vimrc
 nnoremap <expr> ,d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
 nnoremap <leader>- :Ex<CR>
