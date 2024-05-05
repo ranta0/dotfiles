@@ -1,3 +1,4 @@
+# Thanks to https://github.com/mrnugget/dotfiles/blob/master/gitconfig
 [user]
 	email = ric.espo9@gmail.com
 	name = Riccardo Esposito
@@ -10,6 +11,9 @@
 	pu = pull
 	up = push
 	tree = log --oneline --decorate --graph
+	
+	# Taken from https://aaronbonner.io/post/80766268890/git-alias-to-simplify-setting-upstream-branch
+	sup = "!git branch --set-upstream-to=origin/`git symbolic-ref --short HEAD`"
 
 [commit]
 	verbose = true
