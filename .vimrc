@@ -5,6 +5,7 @@ set fileencodings=utf-8,iso-2022-jp-3,euc-jisx0213,cp932,euc-jp,sjis,jis,latin,i
 
 set nu relativenumber nowrap
 set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent
+set scrolloff=8
 
 set nohidden autoread
 
