@@ -89,6 +89,10 @@ if version >= 703
     set undofile undodir=$UNDO_DATA
 endif
 
+" autocmds
+" autoclose qf on CR
+autocmd FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>
+
 " session
 set sessionoptions=buffers,tabpages,options,folds
 
