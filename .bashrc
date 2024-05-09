@@ -91,12 +91,17 @@ if ! shopt -oq posix; then
   fi
 fi
 
-export EDITOR=nvim
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 
 export PATH="${GOPATH-"/usr/local/go"}/bin:$PATH"
 export PATH="${GOPATH-"~/go"}/bin:$PATH"
+
+export EDITOR=nvim
+# include mason binaries if they exist
+if [ -d "$HOME/.local/share/nvim/mason/bin" ] ; then
+    PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
+fi
 
 . "$HOME/.cargo/env"
 
