@@ -6,9 +6,12 @@ alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias :q=exit
-alias pj=". proj"
 alias reset="clear && printf '\e[3J'"
 alias tmux="tmux -u"
+alias g="git"
+alias kl="kubectl"
+alias kn="kubens"
+alias kx="kubectx"
 
 # ls after cd
 cd() {
