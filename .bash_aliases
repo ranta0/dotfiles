@@ -10,15 +10,15 @@ alias reset="clear && printf '\e[3J'"
 alias tmux="tmux -u"
 alias g="git"
 alias kl="kubectl"
-alias kn="kubens"
-alias kx="kubectx"
+alias kn="kubectl-ns"
+alias kx="kubectl-ctx"
 
 # ls after cd
 cd() {
-    builtin cd "$@" && ls -lA
+	builtin cd "$@" && ls -lA
 }
 
 # new session
 tnew() {
-    tmux -u new -s "$1"
+	tmux -u new -s "$1"
 }
