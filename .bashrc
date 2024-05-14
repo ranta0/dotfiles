@@ -1,5 +1,6 @@
 set -o vi
 bind -x '"\C-l": clear'
+bind -x '"\C-f": . ranger'
 
 # If not running interactively, don't do anything
 case $- in

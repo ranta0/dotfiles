@@ -10,8 +10,12 @@
 	rhh = reset --hard HEAD
 	pu = pull
 	up = push
-	tree = log --oneline --decorate --graph
-	
+	su = stash -u
+	dv = difftool
+	rlog = reflog --date=short
+	coi = "!git checkout $(git branch --sort=-committerdate | fzf --layout=reverse --ansi)"
+	tree = "!git log --date=short --format=\"%C(green)%C(bold)%cd %C(auto)%h%d %s (%an)\" --graph --color=always"
+
 	# Taken from https://aaronbonner.io/post/80766268890/git-alias-to-simplify-setting-upstream-branch
 	sup = "!git branch --set-upstream-to=origin/`git symbolic-ref --short HEAD`"
 
@@ -20,3 +24,15 @@
 
 [pull]
 	rebase = true
+
+[merge]
+	tool = vimdiff
+
+[diff]
+	tool = vimdiff
+
+[difftool]
+	prompt = false
+
+[core]
+	pager = less
