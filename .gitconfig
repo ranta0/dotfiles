@@ -28,6 +28,9 @@
 [merge]
 	tool = vimdiff
 
+[mergetool]
+	keepBackup = false
+
 [diff]
 	tool = vimdiff
 

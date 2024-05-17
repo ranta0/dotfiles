@@ -78,13 +78,6 @@ nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
 
-" extras
-" thanks to https://github.com/karoliskoncevicius/oldbook-vim/blob/master/colors/oldbook.vim
-hi DiffAdd ctermbg=72 ctermfg=238 cterm=NONE guibg=#5bb899 guifg=#3c4855 gui=NONE
-hi DiffDelete ctermbg=167 ctermfg=238 cterm=NONE guibg=#db6c6c guifg=#3c4855 gui=NONE
-hi DiffChange ctermbg=238 ctermfg=178 cterm=UNDERLINE guibg=#3c4855 guifg=#d5bc02 gui=UNDERLINE
-hi DiffText ctermbg=178 ctermfg=238 cterm=NONE guibg=#d5bc02 guifg=#3c4855 gui=NONE
-
 " undo
 let $UNDO_DATA = $HOME . '/.vim/undo'
 if version >= 703
@@ -117,3 +110,20 @@ autocmd FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>
 "         execute 'so ' . session_file
 "     endif
 " endfunction
+
+" Better vim diff
+" thanks to https://github.com/karoliskoncevicius/oldbook-vim/blob/master/colors/oldbook.vim
+colorscheme elflord
+hi DiffAdd          ctermbg=72   ctermfg=238  cterm=NONE        guibg=#5bb899 guifg=#3c4855 gui=NONE
+hi DiffDelete       ctermbg=167  ctermfg=238  cterm=NONE        guibg=#db6c6c guifg=#3c4855 gui=NONE
+hi DiffChange       ctermbg=238  ctermfg=178  cterm=UNDERLINE   guibg=#3c4855 guifg=#d5bc02 gui=UNDERLINE
+hi DiffText         ctermbg=178  ctermfg=238  cterm=NONE        guibg=#d5bc02 guifg=#3c4855 gui=NONE
+hi link diffBDiffer        WarningMsg
+hi link diffCommon         WarningMsg
+hi link diffDiffer         WarningMsg
+hi link diffIdentical      WarningMsg
+hi link diffIsA            WarningMsg
+hi link diffNoEOL          WarningMsg
+hi link diffOnly           WarningMsg
+hi link diffRemoved        WarningMsg
+hi link diffAdded          String

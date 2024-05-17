@@ -139,6 +139,12 @@ RUN curl -o ~/.tmux.conf $TMUX_CONF
 ARG BASH_ALIASES=https://raw.githubusercontent.com/ranta0/dotfiles/main/.bash_aliases
 RUN curl -o ~/.bash_aliases $BASH_ALIASES
 
+ARG VIMRC=https://raw.githubusercontent.com/ranta0/dotfiles/main/.vimrc
+RUN curl -o ~/.vimrc $VIMRC
+
+ARG GITCONFIG=https://raw.githubusercontent.com/ranta0/dotfiles/main/.gitconfig
+RUN curl -o ~/.gitconfig $GITCONFIG
+
 ARG NVIM_CONFIG=https://github.com/ranta0/nvim
 RUN mkdir -p .config/nvim \
   && git clone $NVIM_CONFIG .config/nvim \
