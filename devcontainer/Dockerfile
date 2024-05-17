@@ -40,8 +40,7 @@ RUN apt-get update \
   make \
   fzf \
   zoxide \
-  # ranger \
-  # kubectx \
+  ranger \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -68,13 +67,22 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+# Install composer
+RUN EXPECTED_CHECKSUM="$(php -r 'copy("https://composer.github.io/installer.sig", "php://stdout");')" \
+  && php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+  && php -r "if (hash_file('sha384', 'composer-setup.php') === '$EXPECTED_CHECKSUM') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
+  && php composer-setup.php \
+  && php -r "unlink('composer-setup.php');" \
+  && ln -s $WORK_DIR/composer.phar $DEST/composer
+
 ARG GO_VERSION=1.22.0
 RUN curl -sLo go$GO_VERSION.linux-amd64.tar.gz "https://go.dev//dl/go$GO_VERSION.linux-amd64.tar.gz" \
   && rm -rf /usr/local/go \
   && tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
 
 # Install kubectl
-# RUN curl -sL "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o "$DEST/kubectl" && chmod +x "$DEST/kubectl"
+RUN curl -sL "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o "$DEST/kubectl" \
+  && chmod +x "$DEST/kubectl"
 
 # Install Azure CLI
 # RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
@@ -120,7 +128,16 @@ RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
 
 # Autocompletion
 RUN curl -o ~/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
-RUN printf "if [ -f /etc/bash_completion ]; then \n. /etc/bash_completion\nfi" .bash_profile
+# RUN printf "if [ -f /etc/bash_completion ]; then \n. /etc/bash_completion\nfi" .bash_profile
+
+ARG BASHRC=https://raw.githubusercontent.com/ranta0/dotfiles/main/.bashrc
+RUN curl -o ~/.bashrc $BASHRC
+
+ARG TMUX_CONF=https://raw.githubusercontent.com/ranta0/dotfiles/main/.tmux.conf
+RUN curl -o ~/.tmux.conf $TMUX_CONF
+
+ARG BASH_ALIASES=https://raw.githubusercontent.com/ranta0/dotfiles/main/.bash_aliases
+RUN curl -o ~/.bash_aliases $BASH_ALIASES
 
 ARG NVIM_CONFIG=https://github.com/ranta0/nvim
 RUN mkdir -p .config/nvim \
@@ -131,5 +148,17 @@ RUN mkdir -p .config/nvim \
 # this is not working as intended
 RUN nvim --headless "+Lazy! sync" +qa \
   && nvim --headless "+MasonToolsInstallSync" +qa
+
+# Install rust
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+
+# Install krew
+RUN set -x; cd "$(mktemp -d)" \
+  && OS="$(uname | tr '[:upper:]' '[:lower:]')" \
+  && ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" \
+  && KREW="krew-${OS}_${ARCH}" \
+  && curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" \
+  && tar zxvf "${KREW}.tar.gz" \
+  && ./"${KREW}" install krew
 
 CMD ["bash"]
