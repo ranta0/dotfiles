@@ -40,6 +40,7 @@ RUN apt-get update \
   make \
   fzf \
   zoxide \
+  # ranger \
   # kubectx \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -86,7 +87,7 @@ RUN curl -sLo go$GO_VERSION.linux-amd64.tar.gz "https://go.dev//dl/go$GO_VERSION
 #   && make install
 
 # neovim release
-ARG NVIM_VERSION=0.9.4
+ARG NVIM_VERSION=0.10.0
 RUN curl -sLo nvim-linux64.tar.gz "https://github.com/neovim/neovim/releases/download/v$NVIM_VERSION/nvim-linux64.tar.gz" \
   && tar xzf nvim-linux64.tar.gz \
   && ln -s $WORK_DIR/nvim-linux64/bin/nvim $DEST/nvim
