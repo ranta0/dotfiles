@@ -45,7 +45,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Set up user
-ARG USERNAME=dev
+ARG USERNAME=test-dev
 ARG UID=1000
 RUN adduser \
   --uid $UID \

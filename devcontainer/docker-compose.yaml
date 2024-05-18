@@ -1,7 +1,7 @@
 services:
   base:
     build:
-      context: .
+      context: alpine/.
       args:
         USERNAME: test-dev
     stdin_open: true
@@ -11,8 +11,11 @@ services:
       - /home/ranta/.ssh:/home/test-dev/.ssh
       # - /home/ranta/.tmux.conf:/home/test-dev/.tmux.conf
       # - /home/ranta/.bashrc:/home/test-dev/.bashrc
+      # - /home/ranta/.bash_profile:/home/test-dev/.bash_profile
       # - /home/ranta/.bash_aliases:/home/test-dev/.bash_aliases
       # - /home/ranta/.config:/home/test-dev/.config
+      # - /home/ranta/.config/nvim:/home/test-dev/.config/nvim
+      # - /home/ranta/.vimrc:/home/test-dev/.vimrc
       - /home/ranta/github:/home/test-dev/work
       - /home/ranta/media:/home/test-dev/media
       - /home/ranta/.kube:/home/test-dev/.kube

@@ -57,7 +57,6 @@ esac
 # You may want to put all your additions into a separate file like
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
 if [ -f ~/.bash_aliases ]; then
 	. ~/.bash_aliases
 fi
@@ -80,11 +79,13 @@ export PATH="${GOPATH-"/usr/local/go"}/bin:$PATH"
 export PATH="${GOPATH-"~/go"}/bin:$PATH"
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
-. "$HOME/.cargo/env"
+if [ -f "$HOME/.cargo/env" ]; then
+	. "$HOME/.cargo/env"
+fi
 
 export EDITOR=nvim
 # include mason binaries if they exist
-if [ -d "$HOME/.local/share/nvim/mason/bin" ]; then
+if [ -f "$HOME/.local/share/nvim/mason/bin" ]; then
 	PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 fi
 
