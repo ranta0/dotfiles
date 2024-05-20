@@ -58,8 +58,8 @@ cnoremap <C-p> <Up>
 cnoremap <C-n> <Down>
 
 " wildmenu
-inoremap <TAB> <C-n>
-inoremap <S-TAB> <C-p>
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " tools
 nnoremap tr :%s///gn<CR>``cgn
