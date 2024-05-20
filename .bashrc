@@ -85,7 +85,7 @@ fi
 
 export EDITOR=nvim
 # include mason binaries if they exist
-if [ -f "$HOME/.local/share/nvim/mason/bin" ]; then
+if [ -n "$HOME/.local/share/nvim/mason/bin" ]; then
 	PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 fi
 
