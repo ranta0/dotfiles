@@ -53,33 +53,37 @@ nnoremap <C-h> gT
 nnoremap <C-k> :cn<CR>zz
 nnoremap <C-j> :cp<CR>zz
 
+" unimpared like
+nnoremap ]b :bnext<CR>
+nnoremap [b :bprevious<CR>
+nnoremap ]w <C-w>w
+nnoremap [w <C-w>W
+nnoremap ]l :lnext<CR>zz
+nnoremap [l :lprevious<CR>zz
+
 " command
 cnoremap <C-p> <Up>
 cnoremap <C-n> <Down>
 
 " wildmenu
-inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+" inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+" inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " tools
 nnoremap tr :%s///gn<CR>``cgn
 nnoremap tR :%s///gn<CR>``cgN
 
+" toggles
+nnoremap \h :set hls!<CR>
+nnoremap \w :set wrap!<CR>
+nnoremap \n :set relativenumber!<CR>
+nnoremap \p :set paste!<CR>
+nnoremap <expr> \d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
+
 " leader keys
 let mapleader = " "
 
-" lf
-nnoremap <leader><C-k> :lnext<CR>zz
-nnoremap <leader><C-j> :lprevious<CR>zz
-
-" toggles
-nnoremap <leader>th :set hls!<CR>
-nnoremap <leader>tw :set wrap!<CR>
-nnoremap <leader>tn :set relativenumber!<CR>
-nnoremap <leader>tp :set paste!<CR>
-
 " tools
-nnoremap <expr> ,d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
@@ -111,3 +115,6 @@ hi link diffAdded          String
 " autocmds
 " autoclose qf on CR
 autocmd FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>
+
+" do not continue comments on new line
+autocmd BufEnter * set formatoptions-=cro
