@@ -23,6 +23,9 @@ set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 set nobackup noswapfile
 set updatetime=50 lazyredraw ttyfast
 
+set grepprg=grep\ -rnH\ --exclude-dir={.git,node_modules,vendor}\ --ignore-case
+set grepformat=%f:%l:%m
+
 filetype plugin indent on
 syntax enable
 
@@ -87,6 +90,14 @@ let mapleader = " "
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
+nnoremap <leader>sg :call Grep()<CR>
+
+function Grep()
+  let l:search_pattern = input('Grep > ')
+  if !empty(l:search_pattern)
+    execute 'grep!' l:search_pattern
+  endif
+endfunction
 
 " undo
 let $UNDO_DATA = $HOME . '/.vim/undo'
