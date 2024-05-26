@@ -83,10 +83,10 @@ if [ -f "$HOME/.cargo/env" ]; then
 	. "$HOME/.cargo/env"
 fi
 
-export EDITOR=nvim
-# include mason binaries if they exist
-if [ -n "$HOME/.local/share/nvim/mason/bin" ]; then
-	PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
-fi
+export EDITOR=vim
+# # include mason binaries if they exist
+# if [ -n "$HOME/.local/share/nvim/mason/bin" ]; then
+# 	PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
+# fi
 
 eval "$(zoxide init bash)"

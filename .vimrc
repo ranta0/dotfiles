@@ -69,8 +69,8 @@ cnoremap <C-p> <Up>
 cnoremap <C-n> <Down>
 
 " wildmenu
-" inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-" inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " tools
 nnoremap tr :%s///gn<CR>``cgn
@@ -129,3 +129,5 @@ autocmd FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>
 
 " do not continue comments on new line
 autocmd BufEnter * set formatoptions-=cro
+
+source ~/.vim/plugins.vim
