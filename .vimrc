@@ -78,11 +78,11 @@ inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " tools
-nnoremap tr :%s///gn<CR>``cgn
-nnoremap tR :%s///gn<CR>``cgN
+nnoremap tr *Ncgn
+nnoremap tR *ncgN
 
 " toggles
-nnoremap \h :set hls!<CR>
+nmap <silent> // :set hls!<CR>
 nnoremap \w :set wrap!<CR>
 nnoremap \n :set relativenumber!<CR>
 nnoremap \p :set paste!<CR>
@@ -130,7 +130,7 @@ hi link diffAdded          String
 
 " autocmds
 " autoclose qf on CR
-autocmd FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>
+autocmd FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>:lclose<CR>
 
 " do not continue comments on new line
 autocmd BufEnter * set formatoptions-=cro
@@ -138,7 +138,7 @@ autocmd BufEnter * set formatoptions-=cro
 " Install plug like this
 " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 "
-" only load plugins if Plug detected
+" only load plugins if plug detected
 if filereadable(expand("~/.vim/autoload/plug.vim"))
   " it works on nvim as well like this
   silent! exec 'source ~/.vim/autoload/plug.vim'
@@ -150,6 +150,7 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
 
   " utils
   Plug 'tpope/vim-commentary'
+  Plug 'tpope/vim-sleuth'
   Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
   Plug 'junegunn/fzf.vim'
   Plug 'mbbill/undotree'
@@ -199,6 +200,7 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
       nmap <buffer> <leader>rp <plug>(lsp-rename)
       nmap <buffer> <leader>ca :LspCodeAction<CR>
       nmap <buffer> <leader>mf :LspDocumentFormat<CR>
+      nmap <buffer> <leader>td :LspDocumentDiagnostics<CR>
 
       nmap <buffer> [d <plug>(lsp-previous-diagnostic)
       nmap <buffer> ]d <plug>(lsp-next-diagnostic)
@@ -233,6 +235,7 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   " lint/format
   nmap <silent> ]e <Plug>(ale_previous_wrap)
   nmap <silent> [e <Plug>(ale_next_wrap)
+  nmap <leader>te :ALEPopulateQuickfix<CR>:copen<CR>
 
   let g:ale_sign_error = "E>"
   let g:ale_sign_warning = "W>"
