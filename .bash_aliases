@@ -6,6 +6,7 @@ alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias :q=exit
+alias vin="vim -u NONE"
 alias reset="clear && printf '\e[3J'"
 alias tmux="tmux -u"
 alias g="git"
