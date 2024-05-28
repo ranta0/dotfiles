@@ -88,20 +88,37 @@ nnoremap \p :set paste!<CR>
 nnoremap <expr> \d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
 
 " leader keys
-let mapleader = " "
+let mapleader = ' '
 
 " tools
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
-nnoremap <leader>sg :call Grep()<CR>
 
-function Grep()
+function! Grep()
   let l:search_pattern = input('Grep > ')
   if !empty(l:search_pattern)
     execute 'grep!' l:search_pattern
   endif
 endfunction
+nnoremap <leader>sg :call Grep()<CR>
+
+function! RangerExplorer()
+    let tmpfile = tempname()
+    let l:cmd = 'silent !ranger --choosefile=' . tmpfile . ' ' . shellescape(expand('%:p:h'))
+    execute l:cmd
+
+    if filereadable(tmpfile)
+        let filepath = readfile(tmpfile)[0]
+        execute 'edit ' . fnameescape(filepath)
+        call delete(tmpfile)
+    else
+        echo "No file chosen or ranger command failed"
+    endif
+
+    redraw!
+endfunction
+nnoremap <leader>f :call RangerExplorer()<CR>
 
 " undo
 let $UNDO_DATA = $HOME . '/.vim/undo'
@@ -154,6 +171,7 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   Plug 'junegunn/fzf.vim'
   Plug 'mbbill/undotree'
   Plug 'skanehira/vsession'
+  Plug 'markonm/traces.vim'
 
   " lsp/linter/formatter
   Plug 'prabirshrestha/vim-lsp'
@@ -221,6 +239,8 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   augroup END
 
   let g:lsp_diagnostics_virtual_text_insert_mode_enabled = 0
+  let g:lsp_diagnostics_virtual_text_align = 'after'
+  let g:lsp_diagnostics_virtual_text_wrap = 'wrap'
   " vue specific
   let g:lsp_settings_filetype_vue = ['typescript-language-server', 'volar-server']
 
@@ -229,9 +249,9 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   nmap <silent> [e <Plug>(ale_next_wrap)
   nmap <leader>te :ALEPopulateQuickfix<CR>:copen<CR>
 
-  let g:ale_sign_error = "E>"
-  let g:ale_sign_warning = "W>"
-  let g:ale_sign_info = "I>"
+  let g:ale_sign_error = 'E>'
+  let g:ale_sign_warning = 'W>'
+  let g:ale_sign_info = 'I>'
 
   let g:ale_linters_explicit = 1
   let g:ale_linters = {
