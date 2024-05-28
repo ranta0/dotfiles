@@ -79,7 +79,6 @@ inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " tools
 nnoremap tr *Ncgn
-nnoremap tR *ncgN
 
 " toggles
 nmap <silent> // :set hls!<CR>
@@ -179,6 +178,7 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   nnoremap <leader>sf :Files<CR>
   nnoremap <leader>sh :GFiles<CR>
   nnoremap <leader>? :History<CR>
+  nnoremap <leader><leader> :Buffers<CR>
   nnoremap <leader>u :UndotreeToggle<CR><CMD>UndotreeFocus<CR><CR>
 
   " session
@@ -223,14 +223,6 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   let g:lsp_diagnostics_virtual_text_insert_mode_enabled = 0
   " vue specific
   let g:lsp_settings_filetype_vue = ['typescript-language-server', 'volar-server']
-  " rust
-  if executable('rustup')
-      au User lsp_setup call lsp#register_server({
-          \ 'name': 'rust-analyzer',
-          \ 'cmd': {server_info->['rustup', 'run', 'stable', 'rust-analyzer']},
-          \ 'allowlist': ['rust'],
-          \ })
-  endif
 
   " lint/format
   nmap <silent> ]e <Plug>(ale_previous_wrap)
