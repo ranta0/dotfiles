@@ -26,6 +26,8 @@ set updatetime=50 lazyredraw ttyfast
 set grepprg=grep\ -rnH\ --exclude-dir={.git,node_modules,vendor}\ --ignore-case
 set grepformat=%f:%l:%m
 
+packadd! matchit
+
 filetype plugin indent on
 syntax enable
 
@@ -60,21 +62,21 @@ nnoremap gQ <nop>
 
 " tabs
 nnoremap gf <C-w>gf
-nnoremap <C-t> :tabnew<CR>
+nnoremap <silent> <C-t> :tabnew<CR>
 nnoremap <C-l> gt
 nnoremap <C-h> gT
 
 " qf
-nnoremap <C-k> :cn<CR>zz
-nnoremap <C-j> :cp<CR>zz
+nnoremap <C-k> :cn<CR>
+nnoremap <C-j> :cp<CR>
 
 " unimpared like
 nnoremap ]b :bnext<CR>
 nnoremap [b :bprevious<CR>
 nnoremap ]w <C-w>w
 nnoremap [w <C-w>W
-nnoremap ]l :lnext<CR>zz
-nnoremap [l :lprevious<CR>zz
+nnoremap ]l :lnext<CR>
+nnoremap [l :lprevious<CR>
 
 " command
 cnoremap <C-p> <Up>
@@ -143,53 +145,28 @@ function! g:RangerExplorer()
         execute 'edit ' . fnameescape(filepath)
         call delete(tmpfile)
     else
-        echo 'No file chosen or ranger command failed'
+        echohl ErrorMsg | echo 'No file chosen or ranger command failed' | echohl None
     endif
 
     redraw!
 endfunction
-
-function! g:CountSearchMatches()
-    if empty(@/)
-        return
-    endif
-
-    let l:sc = searchcount()
-    echo l:sc.current . '/' . l:sc.total . ' matches for pattern: ' . @/
-endfunction
-
-function! g:CursorWord()
-    hi BetterSearchWordUnderCursor ctermbg=167 ctermfg=238 cterm=NONE guibg=#db6c6c guifg=#3c4855 gui=NONE
-
-    let l:word = expand('<cword>')
-    let l:word_star = '\<'.l:word.'\>'
-    if !empty(@/) && mode() ==? 'n'
-                \ && v:hlsearch
-                \ && ( stridx(l:word, @/) != -1
-                \  || l:word_star == @/ )
-        exe 'match BetterSearchWordUnderCursor /\V\<\%#\w\+\>/'
-        call g:CountSearchMatches()
-    else
-        exe 'match none'
-    endif
-endfunction
 " end functions
 
 " autocmds
-augroup AutoCloseQF
-    au!
-    autocmd FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>:lclose<CR>
+augroup vimrc
+      autocmd!
 augroup END
 
-augroup StopComments
-    au!
-    autocmd BufEnter * set formatoptions-=cro
-augroup END
+" do not keep commenting
+autocmd vimrc BufEnter * set formatoptions-=cro
 
-augroup BetterSearch
-    au!
-    autocmd CursorMoved * call CursorWord()
-augroup END
+" close qf when picked an item
+autocmd vimrc FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>:lclose<CR>
+
+" close quickfix window when it is the only window
+autocmd vimrc WinEnter * if &l:buftype ==# 'quickfix' && winnr('$') == 1 && has('timers')
+            \ | call timer_start(0, {-> execute('quit') }) | endif
+
 " end autocmds
 
 " Install plug like this
@@ -212,7 +189,6 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   Plug 'junegunn/fzf.vim'
   Plug 'mbbill/undotree'
   Plug 'skanehira/vsession'
-  Plug 'markonm/traces.vim'
 
   " lsp/linter/formatter
   Plug 'prabirshrestha/vim-lsp'
