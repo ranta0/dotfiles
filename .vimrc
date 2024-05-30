@@ -3,7 +3,7 @@ if &encoding !=? 'utf-8' | let &termencoding = &encoding | endif
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos
 set fileencodings=utf-8,iso-2022-jp-3,euc-jisx0213,cp932,euc-jp,sjis,jis,latin,iso-2022-jp
 
-set nu relativenumber nowrap
+set number relativenumber nowrap
 set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent
 set scrolloff=8
 
@@ -28,6 +28,13 @@ set grepformat=%f:%l:%m
 
 filetype plugin indent on
 syntax enable
+
+" undo
+let $UNDO_DATA = $HOME . '/.vim/undo'
+if v:version >= 703
+    silent !mkdir -p $UNDO_DATA
+    set undofile undodir=$UNDO_DATA
+endif
 
 let g:netrw_liststyle = 3
 
@@ -81,11 +88,12 @@ inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 nnoremap tr *Ncgn
 
 " toggles
-nmap <silent> // :set hls!<CR>
-nnoremap \w :set wrap!<CR>
-nnoremap \n :set relativenumber!<CR>
-nnoremap \p :set paste!<CR>
-nnoremap <expr> \d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
+nmap <silent> // :let @/ = ""<CR>
+nnoremap ,h :set hls!<CR>
+nnoremap ,n :set relativenumber!<CR>
+nnoremap ,w :set wrap!<CR>
+nnoremap ,p :set paste!<CR>
+nnoremap <expr> ,d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
 
 " leader keys
 let mapleader = ' '
@@ -95,39 +103,11 @@ nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
 
-function! Grep()
-  let l:search_pattern = input('Grep > ')
-  if !empty(l:search_pattern)
-    execute 'grep!' l:search_pattern
-  endif
-endfunction
+" custom
 nnoremap <leader>sg :call Grep()<CR>
-
-function! RangerExplorer()
-    let tmpfile = tempname()
-    let l:cmd = 'silent !ranger --choosefile=' . tmpfile . ' ' . shellescape(expand('%:p:h'))
-    execute l:cmd
-
-    if filereadable(tmpfile)
-        let filepath = readfile(tmpfile)[0]
-        execute 'edit ' . fnameescape(filepath)
-        call delete(tmpfile)
-    else
-        echo "No file chosen or ranger command failed"
-    endif
-
-    redraw!
-endfunction
 nnoremap <leader>f :call RangerExplorer()<CR>
 
-" undo
-let $UNDO_DATA = $HOME . '/.vim/undo'
-if version >= 703
-    silent !mkdir -p $UNDO_DATA
-    set undofile undodir=$UNDO_DATA
-endif
-
-" theme and better vim diff
+" theme
 " thanks to https://github.com/karoliskoncevicius/oldbook-vim/blob/master/colors/oldbook.vim
 colorscheme slate
 hi DiffAdd          ctermbg=72   ctermfg=238  cterm=NONE        guibg=#5bb899 guifg=#3c4855 gui=NONE
@@ -143,19 +123,80 @@ hi link diffNoEOL          WarningMsg
 hi link diffOnly           WarningMsg
 hi link diffRemoved        WarningMsg
 hi link diffAdded          String
+" end theme
+
+" functions
+function! g:Grep()
+  let l:search_pattern = input('Grep > ')
+  if !empty(l:search_pattern)
+    execute 'grep!' l:search_pattern
+  endif
+endfunction
+
+function! g:RangerExplorer()
+    let tmpfile = tempname()
+    let l:cmd = 'silent !ranger --choosefile=' . tmpfile . ' ' . shellescape(expand('%:p:h'))
+    execute l:cmd
+
+    if filereadable(tmpfile)
+        let filepath = readfile(tmpfile)[0]
+        execute 'edit ' . fnameescape(filepath)
+        call delete(tmpfile)
+    else
+        echo 'No file chosen or ranger command failed'
+    endif
+
+    redraw!
+endfunction
+
+function! g:CountSearchMatches()
+    if empty(@/)
+        return
+    endif
+
+    let l:sc = searchcount()
+    echo l:sc.current . '/' . l:sc.total . ' matches for pattern: ' . @/
+endfunction
+
+function! g:CursorWord()
+    hi BetterSearchWordUnderCursor ctermbg=167 ctermfg=238 cterm=NONE guibg=#db6c6c guifg=#3c4855 gui=NONE
+
+    let l:word = expand('<cword>')
+    let l:word_star = '\<'.l:word.'\>'
+    if !empty(@/) && mode() ==? 'n'
+                \ && ( stridx(l:word, @/) != -1
+                \  || l:word_star == @/ )
+        set hlsearch
+        exe 'match BetterSearchWordUnderCursor /\V\<\%#\w\+\>/'
+        call g:CountSearchMatches()
+    else
+        exe 'match none'
+    endif
+endfunction
+" end functions
 
 " autocmds
-" autoclose qf on CR
-autocmd FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>:lclose<CR>
+augroup AutoCloseQF
+    au!
+    autocmd FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>:lclose<CR>
+augroup END
 
-" do not continue comments on new line
-autocmd BufEnter * set formatoptions-=cro
+augroup StopComments
+    au!
+    autocmd BufEnter * set formatoptions-=cro
+augroup END
+
+augroup BetterSearch
+    au!
+    autocmd CursorMoved * call CursorWord()
+augroup END
+" end autocmds
 
 " Install plug like this
 " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 "
 " only load plugins if plug detected
-if filereadable(expand("~/.vim/autoload/plug.vim"))
+if filereadable(expand('~/.vim/autoload/plug.vim'))
   " it works on nvim as well like this
   silent! exec 'source ~/.vim/autoload/plug.vim'
 
@@ -230,7 +271,11 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
       inoremap <expr> <cr> pumvisible() ? asyncomplete#close_popup() : "\<cr>"
 
       let g:lsp_format_sync_timeout = 1000
-      autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
+
+      augroup lsp_autoformat
+          au!
+          autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
+      augroup END
   endfunction
 
   augroup lsp_install
@@ -259,6 +304,7 @@ if filereadable(expand("~/.vim/autoload/plug.vim"))
   \   'typescript': ['eslint'],
   \   'javascript': ['eslint'],
   \   'vue': ['eslint'],
+  \   'vim': ['vint'],
   \}
 
   let g:ale_fix_on_save = 1
