@@ -164,9 +164,9 @@ function! g:CursorWord()
     let l:word = expand('<cword>')
     let l:word_star = '\<'.l:word.'\>'
     if !empty(@/) && mode() ==? 'n'
+                \ && v:hlsearch
                 \ && ( stridx(l:word, @/) != -1
                 \  || l:word_star == @/ )
-        set hlsearch
         exe 'match BetterSearchWordUnderCursor /\V\<\%#\w\+\>/'
         call g:CountSearchMatches()
     else
