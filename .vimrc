@@ -13,20 +13,25 @@ set list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 set hlsearch incsearch
 
 set showcmd noruler laststatus=2
-set statusline=[%n]\ %<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
+set statusline=[%n]\ %<%.99f\ %h%w%m%r%=%y\ %{getcwd()}\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 
 " thanks to https://github.com/changemewtf/no_plugins/blob/master/no_plugins.vim
 set path+=**
 set wildmenu
+if v:version >= 900 | set wildoptions=pum | endif
 set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 
 set nobackup noswapfile
 set updatetime=50 lazyredraw ttyfast
 
-set grepprg=grep\ -rnH\ --exclude-dir={.git,node_modules,vendor}\ --ignore-case
+set grepprg=grep\ -rnH\ --exclude-dir={.git,node_modules,vendor}
+if executable('rg')
+    set grepprg=rg\ --vimgrep
+endif
 set grepformat=%f:%l:%m
 
 packadd! matchit
+packadd! cfilter
 
 filetype plugin indent on
 syntax enable
@@ -39,6 +44,7 @@ if v:version >= 703
 endif
 
 let g:netrw_liststyle = 3
+let g:netrw_keepj='keepj'
 
 " windows causing problems
 let &t_SI = "\<Esc>[5 q"
@@ -46,14 +52,16 @@ let &t_SR = "\<Esc>[3 q"
 let &t_EI = "\<Esc>[1 q"
 
 " nice to have
-nnoremap <silent><expr> j v:count == 0 ? 'gj' : 'j'
-nnoremap <silent><expr> k v:count == 0 ? 'gk' : 'k'
+nnoremap k gk
+nnoremap j gj
+xnoremap k gk
+xnoremap j gj
 nnoremap <C-d> <C-d>zz
 nnoremap <C-u> <C-u>zz
 nnoremap n nzzzv
 nnoremap N Nzzzv
-xnoremap J :m<space>'>+1<CR>gv
-xnoremap K :m<space>'<-2<CR>gv
+vnoremap J :m '>+1<CR>gv=gv
+vnoremap K :m '<-2<CR>gv=gv
 vnoremap <silent> > >gv
 vnoremap <silent> < <gv
 vnoremap $ $h
@@ -78,10 +86,6 @@ nnoremap [w <C-w>W
 nnoremap ]l :lnext<CR>
 nnoremap [l :lprevious<CR>
 
-" command
-cnoremap <C-p> <Up>
-cnoremap <C-n> <Down>
-
 " wildmenu
 inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
@@ -104,10 +108,10 @@ let mapleader = ' '
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
-
-" custom
-nnoremap <leader>sg :call Grep()<CR>
-nnoremap <leader>f :call RangerExplorer()<CR>
+nnoremap <silent> <leader>cd :lcd%:p:h<CR>:pwd<CR>
+nnoremap <leader>f :call g:RangerExplorer()<CR>
+nnoremap <leader>sg :call QFGrep(1)<CR>
+nnoremap <leader>sG :call QFGrep(0)<CR>
 
 " theme
 " thanks to https://github.com/karoliskoncevicius/oldbook-vim/blob/master/colors/oldbook.vim
@@ -128,13 +132,18 @@ hi link diffAdded          String
 " end theme
 
 " functions
-function! g:Grep()
+function! g:QFGrep(ignore_case)
   let l:search_pattern = input('Grep > ')
+  let l:cmd = 'silent grep! '.l:search_pattern
+  if a:ignore_case
+    let l:cmd = l:cmd . ' --ignore-case'
+  endif
   if !empty(l:search_pattern)
-    execute 'grep!' l:search_pattern
+    execute l:cmd
+    redraw!
+    copen
   endif
 endfunction
-
 function! g:RangerExplorer()
     let tmpfile = tempname()
     let l:cmd = 'silent !ranger --choosefile=' . tmpfile . ' ' . shellescape(expand('%:p:h'))
@@ -166,7 +175,6 @@ autocmd vimrc FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>:lclose<CR>
 " close quickfix window when it is the only window
 autocmd vimrc WinEnter * if &l:buftype ==# 'quickfix' && winnr('$') == 1 && has('timers')
             \ | call timer_start(0, {-> execute('quit') }) | endif
-
 " end autocmds
 
 " Install plug like this
