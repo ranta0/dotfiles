@@ -43,7 +43,6 @@ if v:version >= 703
     set undofile undodir=$UNDO_DATA
 endif
 
-let g:netrw_liststyle = 3
 let g:netrw_keepj='keepj'
 
 " windows causing problems
@@ -146,7 +145,7 @@ function! g:QFGrep(ignore_case)
 endfunction
 function! g:RangerExplorer()
     let tmpfile = tempname()
-    let l:cmd = 'silent !ranger --choosefile=' . tmpfile . ' ' . shellescape(expand('%:p:h'))
+    let l:cmd = 'silent !ranger --cmd "set show_hidden=true" --choosefile=' . tmpfile . ' ' . shellescape(expand('%:p:h'))
     execute l:cmd
 
     if filereadable(tmpfile)
