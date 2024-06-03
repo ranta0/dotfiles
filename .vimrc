@@ -13,7 +13,7 @@ set list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 set hlsearch incsearch
 
 set showcmd noruler laststatus=2
-set statusline=[%n]\ %<%.99f\ %h%w%m%r%=%y\ %{getcwd()}\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
+set statusline=[%n]\ %<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 
 " thanks to https://github.com/changemewtf/no_plugins/blob/master/no_plugins.vim
 set path+=**
