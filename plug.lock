@@ -19,7 +19,5 @@ silent! let g:plugs['vim-lsp-settings'].commit = 'a962acf04ada9ba97862fa962cce19
 silent! let g:plugs['vim-polyglot'].commit = 'bc8a81d3592dab86334f27d1d43c080ebf680d42'
 silent! let g:plugs['vim-sleuth'].commit = '1cc4557420f215d02c4d2645a748a816c220e99b'
 silent! let g:plugs['vsession'].commit = '96617854373c1e61628021ac7b781392b9c831c5'
-silent! let g:plugs['wildfire.vim'].commit = 'dfcf48aad2e80c63272df67a1b81e37cbc443412'
 
 PlugUpdate!
-

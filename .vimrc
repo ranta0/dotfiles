@@ -198,7 +198,6 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   Plug 'mbbill/undotree'
   Plug 'skanehira/vsession'
   Plug 'markonm/traces.vim'
-  Plug 'gcmt/wildfire.vim'
 
   " lsp/linter/formatter
   Plug 'prabirshrestha/vim-lsp'
