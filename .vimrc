@@ -143,6 +143,7 @@ function! g:QFGrep(ignore_case)
     copen
   endif
 endfunction
+
 function! g:RangerExplorer()
     let tmpfile = tempname()
     let l:cmd = 'silent !ranger --cmd "set show_hidden=true" --choosefile=' . tmpfile . ' ' . shellescape(expand('%:p:h'))
@@ -196,6 +197,8 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   Plug 'junegunn/fzf.vim'
   Plug 'mbbill/undotree'
   Plug 'skanehira/vsession'
+  Plug 'markonm/traces.vim'
+  Plug 'gcmt/wildfire.vim'
 
   " lsp/linter/formatter
   Plug 'prabirshrestha/vim-lsp'
