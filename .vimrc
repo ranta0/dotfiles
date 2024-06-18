@@ -272,8 +272,9 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   let g:lsp_semantic_enabled = 0
   let g:lsp_format_sync_timeout = 1000
   let g:lsp_diagnostics_virtual_text_insert_mode_enabled = 0
-  let g:lsp_diagnostics_virtual_text_align = 'after'
-  let g:lsp_diagnostics_virtual_text_wrap = 'wrap'
+  let g:lsp_diagnostics_virtual_text_enabled = 0
+  let g:lsp_document_highlight_enabled = 0
+  let g:lsp_diagnostics_float_cursor = 1
   " vue specific
   let g:lsp_settings_filetype_vue = ['typescript-language-server', 'volar-server']
 
