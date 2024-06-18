@@ -93,7 +93,6 @@ inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 nnoremap tr *Ncgn
 
 " toggles
-nmap <silent> // :let @/ = ""<CR>
 nnoremap ,h :set hls!<CR>
 nnoremap ,n :set relativenumber!<CR>
 nnoremap ,w :set wrap!<CR>
@@ -104,6 +103,7 @@ nnoremap <expr> ,d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
 let mapleader = ' '
 
 " tools
+nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
@@ -268,6 +268,9 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
       autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
   augroup END
 
+  let g:lsp_use_native_client = 1
+  let g:lsp_semantic_enabled = 0
+  let g:lsp_format_sync_timeout = 1000
   let g:lsp_diagnostics_virtual_text_insert_mode_enabled = 0
   let g:lsp_diagnostics_virtual_text_align = 'after'
   let g:lsp_diagnostics_virtual_text_wrap = 'wrap'
