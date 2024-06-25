@@ -1,7 +1,8 @@
-" thanks to https://github.com/itchyny/dotfiles/blob/main/.vimrc
-if &encoding !=? 'utf-8' | let &termencoding = &encoding | endif
+filetype plugin indent on
+syntax enable
+
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos
-set fileencodings=utf-8,iso-2022-jp-3,euc-jisx0213,cp932,euc-jp,sjis,jis,latin,iso-2022-jp
+set fileencodings=utf-8,latin
 
 set number relativenumber nowrap
 set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent
@@ -15,8 +16,7 @@ set hlsearch incsearch
 set showcmd noruler laststatus=2
 set statusline=[%n]\ %<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 
-" thanks to https://github.com/changemewtf/no_plugins/blob/master/no_plugins.vim
-set path+=**
+set path=.,,
 set wildmenu
 if v:version >= 900 | set wildoptions=pum | endif
 set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
@@ -30,12 +30,6 @@ if executable('rg')
 endif
 set grepformat=%f:%l:%m
 
-packadd! matchit
-packadd! cfilter
-
-filetype plugin indent on
-syntax enable
-
 " undo
 let $UNDO_DATA = $HOME . '/.vim/undo'
 if v:version >= 703
@@ -43,9 +37,7 @@ if v:version >= 703
     set undofile undodir=$UNDO_DATA
 endif
 
-let g:netrw_keepj='keepj'
-
-" windows causing problems
+" cursor modes
 let &t_SI = "\<Esc>[5 q"
 let &t_SR = "\<Esc>[3 q"
 let &t_EI = "\<Esc>[1 q"
@@ -53,22 +45,22 @@ let &t_EI = "\<Esc>[1 q"
 " nice to have
 nnoremap k gk
 nnoremap j gj
-xnoremap k gk
-xnoremap j gj
+vnoremap k gk
+vnoremap j gj
 nnoremap <C-d> <C-d>zz
 nnoremap <C-u> <C-u>zz
+vnoremap <C-d> <C-d>zz
+vnoremap <C-u> <C-u>zz
 nnoremap n nzzzv
 nnoremap N Nzzzv
-vnoremap J :m '>+1<CR>gv=gv
-vnoremap K :m '<-2<CR>gv=gv
 vnoremap <silent> > >gv
 vnoremap <silent> < <gv
 vnoremap $ $h
 nnoremap Q <nop>
 nnoremap gQ <nop>
+nnoremap <F1> <esc>
 
 " tabs
-nnoremap gf <C-w>gf
 nnoremap <silent> <C-t> :tabnew<CR>
 nnoremap <C-l> gt
 nnoremap <C-h> gT
@@ -76,18 +68,8 @@ nnoremap <C-h> gT
 " qf
 nnoremap <C-k> :cn<CR>
 nnoremap <C-j> :cp<CR>
-
-" unimpared like
-nnoremap ]b :bnext<CR>
-nnoremap [b :bprevious<CR>
-nnoremap ]w <C-w>w
-nnoremap [w <C-w>W
-nnoremap ]l :lnext<CR>
-nnoremap [l :lprevious<CR>
-
-" wildmenu
-inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+nnoremap ]w :lnext<CR>
+nnoremap [w :lprevious<CR>
 
 " tools
 nnoremap tr *Ncgn
@@ -104,10 +86,13 @@ let mapleader = ' '
 
 " tools
 nmap <silent> <leader>/ :let @/ = ""<CR>
+nnoremap <leader>sf :find *
+nnoremap <leader>? :OldFiles <space>
+nnoremap <leader><leader> :b *
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
-nnoremap <silent> <leader>cd :lcd%:p:h<CR>:pwd<CR>
+nnoremap <silent> <leader>cd :lcd%:p:h<CR>:call g:SetPath()<CR>:pwd<CR>
 nnoremap <leader>f :call g:RangerExplorer()<CR>
 nnoremap <leader>sg :call QFGrep(1)<CR>
 nnoremap <leader>sG :call QFGrep(0)<CR>
@@ -159,23 +144,60 @@ function! g:RangerExplorer()
 
     redraw!
 endfunction
+
+function! g:OldFiles(a,...)
+    function! s:unique(list)
+        let visited = {}
+        let ret = []
+        for l in a:list
+            if !empty(l) && !has_key(visited, l)
+                call add(ret, l)
+                let visited[l] = 1
+            endif
+        endfor
+        return ret
+    endfunction
+
+    let l:recent_files = s:unique(map(
+                \ filter([expand('%')], 'len(v:val)')
+                \   + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
+                \ 'fnamemodify(v:val, ":~:.")'))
+
+    return copy(l:recent_files)->filter('v:val =~ a:a')
+endfunction
+
+function! g:SetPath()
+    if isdirectory('.git') | let &path .= join(systemlist('git ls-tree -d --name-only -r HEAD'), ',') | endif
+endfunction
 " end functions
+
+" commands
+command! Scratch if bufexists('scratch') | buffer scratch | else
+            \ | split | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
+
+" custom oldfiles
+command -nargs=1 -complete=customlist,OldFiles OldFiles edit <args>
+" end commands
 
 " autocmds
 augroup vimrc
       autocmd!
 augroup END
 
-" do not keep commenting
-autocmd vimrc BufEnter * set formatoptions-=cro
-
-" close qf when picked an item
+" close qf/lf when picked an item
 autocmd vimrc FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>:lclose<CR>
 
 " close quickfix window when it is the only window
 autocmd vimrc WinEnter * if &l:buftype ==# 'quickfix' && winnr('$') == 1 && has('timers')
             \ | call timer_start(0, {-> execute('quit') }) | endif
+
+" git powered path
+autocmd vimrc VimEnter,BufReadPost,BufNewFile * :call g:SetPath()
 " end autocmds
+
+" packadd! matchit
+" packadd! cfilter
+" packadd! editorconfig
 
 " Install plug like this
 " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -193,8 +215,6 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   " utils
   Plug 'tpope/vim-commentary'
   Plug 'tpope/vim-sleuth'
-  Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-  Plug 'junegunn/fzf.vim'
   Plug 'mbbill/undotree'
   Plug 'skanehira/vsession'
   Plug 'markonm/traces.vim'
@@ -208,10 +228,9 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
 
   " colors
   Plug 'joshdick/onedark.vim'
-  Plug 'sheerun/vim-polyglot'
   call plug#end()
 
-  colorscheme onedark
+  silent! colorscheme onedark
 
   " git
   nnoremap <leader>gs :Git<CR>
@@ -219,10 +238,6 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   nmap [h <Plug>(GitGutterPrevHunk)
 
   " utils
-  nnoremap <leader>sf :Files<CR>
-  nnoremap <leader>sh :GFiles<CR>
-  nnoremap <leader>? :History<CR>
-  nnoremap <leader><leader> :Buffers<CR>
   nnoremap <leader>u :UndotreeToggle<CR><CMD>UndotreeFocus<CR><CR>
 
   " session
@@ -253,7 +268,9 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
       nnoremap <buffer> <expr><c-f> lsp#scroll(+4)
       nnoremap <buffer> <expr><c-g> lsp#scroll(-4)
 
-      inoremap <expr> <cr> pumvisible() ? asyncomplete#close_popup() : "\<cr>"
+      inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+      inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+      inoremap <expr> <cr>    pumvisible() ? asyncomplete#close_popup() : "\<cr>"
 
       let g:lsp_format_sync_timeout = 1000
 
@@ -269,7 +286,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   augroup END
 
   let g:lsp_use_native_client = 1
-  let g:lsp_semantic_enabled = 0
+  let g:lsp_semantic_enabled = 1
   let g:lsp_format_sync_timeout = 1000
   let g:lsp_diagnostics_virtual_text_insert_mode_enabled = 0
   let g:lsp_diagnostics_virtual_text_enabled = 0
