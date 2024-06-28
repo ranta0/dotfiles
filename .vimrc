@@ -25,9 +25,6 @@ set nobackup noswapfile
 set updatetime=50 lazyredraw ttyfast
 
 set grepprg=grep\ -rnH\ --exclude-dir={.git,node_modules,vendor}
-if executable('rg')
-    set grepprg=rg\ --vimgrep
-endif
 set grepformat=%f:%l:%m
 
 " undo
@@ -59,6 +56,8 @@ vnoremap $ $h
 nnoremap Q <nop>
 nnoremap gQ <nop>
 nnoremap <F1> <esc>
+nnoremap ]w <C-w>w
+nnoremap [w <C-w>W
 
 " tabs
 nnoremap <silent> <C-t> :tabnew<CR>
@@ -68,8 +67,8 @@ nnoremap <C-h> gT
 " qf
 nnoremap <C-k> :cn<CR>
 nnoremap <C-j> :cp<CR>
-nnoremap ]w :lnext<CR>
-nnoremap [w :lprevious<CR>
+nnoremap ]q :lnext<CR>
+nnoremap [q :lprevious<CR>
 
 " tools
 nnoremap tr *Ncgn
