@@ -173,7 +173,9 @@ function! g:AllFiles(a,...)
 endfunction
 
 function! g:SetPath()
-    if isdirectory('.git') | let &path .= join(systemlist('git ls-tree -d --name-only -r HEAD'), ',') | endif
+    if isdirectory('.git')
+        silent! let &path .= join(systemlist('git ls-tree -d --name-only -r HEAD'), ',')
+    endif
 endfunction
 " end functions
 
