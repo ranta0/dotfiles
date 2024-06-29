@@ -86,15 +86,16 @@ let mapleader = ' '
 " tools
 nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sf :find *
+nnoremap <leader>sh :AllFiles <space>
 nnoremap <leader>? :OldFiles <space>
-nnoremap <leader><leader> :b *
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
-nnoremap <silent> <leader>cd :lcd%:p:h<CR>:call g:SetPath()<CR>:pwd<CR>
 nnoremap <leader>f :call g:RangerExplorer()<CR>
 nnoremap <leader>sg :call QFGrep(1)<CR>
 nnoremap <leader>sG :call QFGrep(0)<CR>
+nnoremap <silent> <leader>cd :lcd%:p:h<CR>:call g:SetPath()<CR>:pwd<CR>
+nnoremap <leader><leader> :b *
 
 " theme
 " thanks to https://github.com/karoliskoncevicius/oldbook-vim/blob/master/colors/oldbook.vim
@@ -165,6 +166,12 @@ function! g:OldFiles(a,...)
     return copy(l:recent_files)->filter('v:val =~ a:a')
 endfunction
 
+function! g:AllFiles(a,...)
+    let l:result = system("find . -type f 2>&1 | grep -v 'Permission denied'")
+    let l:files = split(l:result, "\n")
+    return copy(l:files)->filter('v:val =~ a:a')
+endfunction
+
 function! g:SetPath()
     if isdirectory('.git') | let &path .= join(systemlist('git ls-tree -d --name-only -r HEAD'), ',') | endif
 endfunction
@@ -172,10 +179,11 @@ endfunction
 
 " commands
 command! Scratch if bufexists('scratch') | buffer scratch | else
-            \ | split | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
+            \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
 
-" custom oldfiles
+" custom pickers
 command -nargs=1 -complete=customlist,OldFiles OldFiles edit <args>
+command -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
 " end commands
 
 " autocmds
