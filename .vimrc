@@ -3,6 +3,7 @@ syntax enable
 
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos
 set fileencodings=utf-8,latin
+set termguicolors
 
 set number relativenumber nowrap
 set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent
@@ -23,6 +24,7 @@ set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 
 set nobackup noswapfile
 set updatetime=50 lazyredraw ttyfast
+set ttimeoutlen=50
 
 set grepprg=grep\ -rnH\ --exclude-dir={.git,node_modules,vendor}
 set grepformat=%f:%l:%m
@@ -35,9 +37,8 @@ if v:version >= 703
 endif
 
 " cursor modes
-let &t_SI = "\<Esc>[5 q"
-let &t_SR = "\<Esc>[3 q"
-let &t_EI = "\<Esc>[1 q"
+let &t_SI = "\<Esc>[6 q"
+let &t_EI = "\<Esc>[2 q"
 
 " nice to have
 nnoremap k gk
