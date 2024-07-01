@@ -65,6 +65,10 @@ nnoremap <silent> <C-t> :tabnew<CR>
 nnoremap <C-l> gt
 nnoremap <C-h> gT
 
+" completion
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
 " qf
 nnoremap <C-k> :cn<CR>
 nnoremap <C-j> :cp<CR>
@@ -278,8 +282,6 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
       nnoremap <buffer> <expr><c-f> lsp#scroll(+4)
       nnoremap <buffer> <expr><c-g> lsp#scroll(-4)
 
-      inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-      inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
       inoremap <expr> <cr>    pumvisible() ? asyncomplete#close_popup() : "\<cr>"
 
       let g:lsp_format_sync_timeout = 1000
