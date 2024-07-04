@@ -105,6 +105,7 @@ nnoremap <leader><leader> :b *
 " theme
 " thanks to https://github.com/karoliskoncevicius/oldbook-vim/blob/master/colors/oldbook.vim
 colorscheme slate
+if v:version >= 900 | colorscheme habamax | endif
 hi DiffAdd          ctermbg=72   ctermfg=238  cterm=NONE        guibg=#5bb899 guifg=#3c4855 gui=NONE
 hi DiffDelete       ctermbg=167  ctermfg=238  cterm=NONE        guibg=#db6c6c guifg=#3c4855 gui=NONE
 hi DiffChange       ctermbg=238  ctermfg=178  cterm=UNDERLINE   guibg=#3c4855 guifg=#d5bc02 gui=UNDERLINE
@@ -150,6 +151,20 @@ function! g:RangerExplorer()
     redraw!
 endfunction
 
+" copied recent_files from https://github.com/junegunn/fzf.vim
+function! g:Buflisted()
+    function! s:sort_buffers(...)
+        let [b1, b2] = map(copy(a:000), 'get(g:buffers, v:val, v:val)')
+        return b1 < b2 ? 1 : -1
+    endfunction
+
+    function! s:buflisted()
+        return filter(range(1, bufnr('$')), 'buflisted(v:val) && getbufvar(v:val, "&filetype") != "qf"')
+    endfunction
+
+    return sort(s:buflisted(), 's:sort_buffers')
+endfunction
+
 function! g:OldFiles(a,...)
     function! s:unique(list)
         let visited = {}
@@ -165,11 +180,13 @@ function! g:OldFiles(a,...)
 
     let l:recent_files = s:unique(map(
                 \ filter([expand('%')], 'len(v:val)')
+                \   + filter(map(g:Buflisted(), 'bufname(v:val)'), 'len(v:val)')
                 \   + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
                 \ 'fnamemodify(v:val, ":~:.")'))
 
     return copy(l:recent_files)->filter('v:val =~ a:a')
 endfunction
+" end recent files
 
 function! g:AllFiles(a,...)
     let l:result = system("find . -type f 2>&1 | grep -v 'Permission denied'")
@@ -207,6 +224,18 @@ autocmd vimrc WinEnter * if &l:buftype ==# 'quickfix' && winnr('$') == 1 && has(
 
 " git powered path
 autocmd vimrc VimEnter,BufReadPost,BufNewFile * :call g:SetPath()
+
+" https://github.com/junegunn/fzf.vim
+let g:buffers = {}
+augroup buffers
+    autocmd!
+    if exists('*reltimefloat')
+        autocmd BufWinEnter,WinEnter * let g:buffers[bufnr('')] = reltimefloat(reltime())
+    else
+        autocmd BufWinEnter,WinEnter * let g:buffers[bufnr('')] = localtime()
+    endif
+    autocmd BufDelete * silent! call remove(g:buffers, expand('<abuf>'))
+augroup END
 " end autocmds
 
 " packadd! matchit
