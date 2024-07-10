@@ -1,5 +1,4 @@
-# Can I go smaller?
-FROM debian:11-slim
+FROM debian:12
 
 ARG DEST=/usr/local/bin
 ARG WORK_DIR=/tmp
@@ -33,7 +32,7 @@ RUN apt-get update \
   lsb-release \
   ripgrep \
   jq \
-  vim \
+  vim-gtk3 \
   tmux \
   bash-completion \
   wget \
@@ -85,7 +84,7 @@ RUN curl -sL "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
   && chmod +x "$DEST/kubectl"
 
 # Install Azure CLI
-# RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash -s -- -y
 
 # Compile nvim
 # RUN git clone https://github.com/neovim/neovim \
@@ -111,7 +110,7 @@ USER $USERNAME
 WORKDIR /home/$USERNAME
 ENV TERM xterm-256color
 
-ENV NVM_DIR=/home/$USERNAME/.nvm 
+ENV NVM_DIR=/home/$USERNAME/.nvm
 ENV NODE_VERSION=20.10.0
 ARG NVM_VERSION=0.39.7
 # Install nvm with node and npm
@@ -145,15 +144,18 @@ RUN curl -o ~/.vimrc $VIMRC
 ARG GITCONFIG=https://raw.githubusercontent.com/ranta0/dotfiles/main/.gitconfig
 RUN curl -o ~/.gitconfig $GITCONFIG
 
-ARG NVIM_CONFIG=https://github.com/ranta0/nvim
-RUN mkdir -p .config/nvim \
-  && git clone $NVIM_CONFIG .config/nvim \
-  && chown $USERNAME:$USERNAME .config/nvim
+# vim-plug
+RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
+# ARG NVIM_CONFIG=https://github.com/ranta0/nvim
+# RUN mkdir -p .config/nvim \
+#   && git clone $NVIM_CONFIG .config/nvim \
+#   && chown $USERNAME:$USERNAME .config/nvim
 
 # Install nvim packages
 # this is not working as intended
-RUN nvim --headless "+Lazy! sync" +qa \
-  && nvim --headless "+MasonToolsInstallSync" +qa
+# RUN nvim --headless "+Lazy! sync" +qa \
+#   && nvim --headless "+MasonToolsInstallSync" +qa
 
 # Install rust
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y

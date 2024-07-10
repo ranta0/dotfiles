@@ -6,6 +6,7 @@ WORKDIR $WORK_DIR
 
 RUN apk update \
   && apk add --no-cache \
+  bash \
   gnupg \
   openssh-client \
   curl \
@@ -39,7 +40,7 @@ ARG UID=1000
 RUN adduser \
   -u $UID \
   -D \
-  -s /bin/ash \
+  -s bash \
   -h /home/$USERNAME \
   -g "dev" \
   $USERNAME
