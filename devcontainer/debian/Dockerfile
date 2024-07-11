@@ -1,4 +1,4 @@
-FROM debian:12
+FROM debian:12-slim
 
 ARG DEST=/usr/local/bin
 ARG WORK_DIR=/tmp
@@ -7,28 +7,19 @@ WORKDIR $WORK_DIR
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
   gnupg \
-  build-essential \
+  g++ \
   ca-certificates \
   software-properties-common \
-  cron \
   openssh-client \
   curl \
   gettext \
   sudo \
-  libtool \
-  libtool-bin \
-  autoconf \
-  automake \
-  cmake \
-  g++ \
   pkg-config \
   unzip \
   curl \
   git \
   scdoc \
   xclip \
-  libevent-dev \
-  libgraph-easy-perl \
   lsb-release \
   ripgrep \
   jq \
@@ -40,6 +31,7 @@ RUN apt-get update \
   fzf \
   zoxide \
   ranger \
+  highlight \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -86,13 +78,6 @@ RUN curl -sLo go$GO_VERSION.linux-amd64.tar.gz "https://go.dev//dl/go$GO_VERSION
 # # Install Azure CLI
 # RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash -s -- -y
 
-# Compile nvim
-# RUN git clone https://github.com/neovim/neovim \
-#   && cd neovim \
-#   && git checkout stable \
-#   && make CMAKE_BUILD_TYPE=Release \
-#   && make install
-
 # neovim release
 ARG NVIM_VERSION=0.10.0
 RUN curl -sLo nvim-linux64.tar.gz "https://github.com/neovim/neovim/releases/download/v$NVIM_VERSION/nvim-linux64.tar.gz" \
@@ -125,38 +110,6 @@ RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
   eslint \
   prettier
 
-# Autocompletion
-RUN curl -o ~/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
-# RUN printf "if [ -f /etc/bash_completion ]; then \n. /etc/bash_completion\nfi" .bash_profile
-
-ARG BASHRC=https://raw.githubusercontent.com/ranta0/dotfiles/main/.bashrc
-RUN curl -o ~/.bashrc $BASHRC
-
-ARG TMUX_CONF=https://raw.githubusercontent.com/ranta0/dotfiles/main/.tmux.conf
-RUN curl -o ~/.tmux.conf $TMUX_CONF
-
-ARG BASH_ALIASES=https://raw.githubusercontent.com/ranta0/dotfiles/main/.bash_aliases
-RUN curl -o ~/.bash_aliases $BASH_ALIASES
-
-ARG VIMRC=https://raw.githubusercontent.com/ranta0/dotfiles/main/.vimrc
-RUN curl -o ~/.vimrc $VIMRC
-
-ARG GITCONFIG=https://raw.githubusercontent.com/ranta0/dotfiles/main/.gitconfig
-RUN curl -o ~/.gitconfig $GITCONFIG
-
-# vim-plug
-RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
-# ARG NVIM_CONFIG=https://github.com/ranta0/nvim
-# RUN mkdir -p .config/nvim \
-#   && git clone $NVIM_CONFIG .config/nvim \
-#   && chown $USERNAME:$USERNAME .config/nvim
-
-# Install nvim packages
-# this is not working as intended
-# RUN nvim --headless "+Lazy! sync" +qa \
-#   && nvim --headless "+MasonToolsInstallSync" +qa
-
 # Install rust
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 
@@ -168,5 +121,31 @@ RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 #   && curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" \
 #   && tar zxvf "${KREW}.tar.gz" \
 #   && ./"${KREW}" install krew
+
+# Autocompletion
+RUN curl -o ~/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+
+ARG DOTFILES=https://github.com/ranta0/dotfiles
+RUN git clone $DOTFILES ~/dotfiles \
+  && rm ~/.bashrc \
+  && ln -s ~/dotfiles/.bashrc ~/.bashrc \
+  && ln -s ~/dotfiles/.bash_aliases ~/.bash_aliases \
+  && ln -s ~/dotfiles/.vimrc ~/.vimrc \
+  && ln -s ~/dotfiles/.gitconfig ~/.gitconfig \
+  && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf
+
+ARG NVIM_CONFIG=https://github.com/ranta0/nvim
+RUN mkdir -p .config/nvim \
+  && git clone $NVIM_CONFIG .config/nvim \
+  && chown $USERNAME:$USERNAME .config/nvim
+
+# Install nvim packages
+# this is not working as intended
+RUN nvim --headless "+Lazy! sync" +qa \
+  && nvim --headless "+MasonToolsInstallSync" +qa
+
+# Install vim packages
+RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \
+  && vim +PlugInstall +qall
 
 CMD ["bash"]
