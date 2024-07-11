@@ -79,12 +79,12 @@ RUN curl -sLo go$GO_VERSION.linux-amd64.tar.gz "https://go.dev//dl/go$GO_VERSION
   && rm -rf /usr/local/go \
   && tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
 
-# Install kubectl
-RUN curl -sL "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o "$DEST/kubectl" \
-  && chmod +x "$DEST/kubectl"
+# # Install kubectl
+# RUN curl -sL "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o "$DEST/kubectl" \
+#   && chmod +x "$DEST/kubectl"
 
-# Install Azure CLI
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash -s -- -y
+# # Install Azure CLI
+# RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash -s -- -y
 
 # Compile nvim
 # RUN git clone https://github.com/neovim/neovim \
@@ -160,13 +160,13 @@ RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubuserconte
 # Install rust
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 
-# Install krew
-RUN set -x; cd "$(mktemp -d)" \
-  && OS="$(uname | tr '[:upper:]' '[:lower:]')" \
-  && ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" \
-  && KREW="krew-${OS}_${ARCH}" \
-  && curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" \
-  && tar zxvf "${KREW}.tar.gz" \
-  && ./"${KREW}" install krew
+# # Install krew
+# RUN set -x; cd "$(mktemp -d)" \
+#   && OS="$(uname | tr '[:upper:]' '[:lower:]')" \
+#   && ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" \
+#   && KREW="krew-${OS}_${ARCH}" \
+#   && curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" \
+#   && tar zxvf "${KREW}.tar.gz" \
+#   && ./"${KREW}" install krew
 
 CMD ["bash"]

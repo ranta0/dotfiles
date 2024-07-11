@@ -191,7 +191,11 @@ endfunction
 function! g:AllFiles(a,...)
     let l:result = system("find . -type f 2>&1 | grep -v 'Permission denied'")
     let l:files = split(l:result, "\n")
-    return copy(l:files)->filter('v:val =~ a:a')
+    if v:version >= 900
+        return matchfuzzy(l:files, a:a)
+    else
+        return copy(l:files)->filter('v:val =~ a:a')
+    endif
 endfunction
 
 function! g:SetPath()
