@@ -265,6 +265,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   Plug 'mbbill/undotree'
   Plug 'skanehira/vsession'
   Plug 'markonm/traces.vim'
+  Plug 'habamax/vim-shout'
 
   " lsp/linter/formatter
   Plug 'prabirshrestha/vim-lsp'
@@ -275,9 +276,10 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
 
   " colors
   Plug 'joshdick/onedark.vim'
+  Plug 'sheerun/vim-polyglot'
   call plug#end()
 
-  silent! colorscheme onedark
+  " silent! colorscheme onedark
 
   " git
   nnoremap <leader>gs :Git<CR>
@@ -331,7 +333,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   augroup END
 
   let g:lsp_use_native_client = 1
-  let g:lsp_semantic_enabled = 1
+  let g:lsp_semantic_enabled = 0
   let g:lsp_format_sync_timeout = 1000
   let g:lsp_diagnostics_virtual_text_insert_mode_enabled = 0
   let g:lsp_diagnostics_virtual_text_enabled = 0
