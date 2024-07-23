@@ -268,11 +268,8 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   Plug 'habamax/vim-shout'
 
   " lsp/linter/formatter
-  Plug 'prabirshrestha/vim-lsp'
-  Plug 'prabirshrestha/asyncomplete.vim'
-  Plug 'prabirshrestha/asyncomplete-lsp.vim'
-  Plug 'mattn/vim-lsp-settings'
   Plug 'dense-analysis/ale'
+  Plug 'yegappan/lsp'
 
   " colors
   Plug 'joshdick/onedark.vim'
@@ -292,55 +289,83 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   " session
   let g:vsession_path = '~/.vim/sessions'
   let g:vsession_save_last_on_leave = 1
-  let g:vsession_ui = 'fzf'
 
-  " lsp
-  function! s:on_lsp_buffer_enabled() abort
-      setlocal omnifunc=lsp#complete
-      setlocal signcolumn=yes
-      if exists('+tagfunc') | setlocal tagfunc=lsp#tagfunc | endif
-      nmap <buffer> gd <plug>(lsp-definition)
-      nmap <buffer> gs <plug>(lsp-document-symbol-search)
-      nmap <buffer> gS <plug>(lsp-workspace-symbol-search)
-      nmap <buffer> gr <plug>(lsp-references)
-      nmap <buffer> gi <plug>(lsp-implementation)
-      nmap <buffer> gT <plug>(lsp-type-definition)
-      nmap <buffer> <leader>rp <plug>(lsp-rename)
-      nmap <buffer> <leader>ca :LspCodeAction<CR>
-      nmap <buffer> <leader>mf :LspDocumentFormat<CR>
-      nmap <buffer> <leader>td :LspDocumentDiagnostics<CR>
+  let lspOpts = #{
+              \ autoHighlightDiags: v:true,
+              \ ignoreMissingServer: v:true,
+              \ }
 
-      nmap <buffer> [d <plug>(lsp-previous-diagnostic)
-      nmap <buffer> ]d <plug>(lsp-next-diagnostic)
-      nmap <buffer> K <plug>(lsp-hover)
+  let lspServers = [
+              \ #{
+              \     name: 'golang',
+              \     filetype: ['go', 'gomod'],
+              \     path: '/usr/local/bin/gopls',
+              \     args: ['serve'],
+              \     syncInit: v:true,
+              \     initializationOptions: #{
+              \         semanticTokens: v:true,
+              \     },
+              \ },
+              \ #{
+              \   name: 'tsserver',
+              \   filetype: ['javascript', 'typescript'],
+              \   path: '/usr/local/bin/tsserver',
+              \   args: ['--stdio'],
+              \ },
+              \ #{
+              \   name: 'vue-ls',
+              \   filetype: ['vue'],
+              \   path: '/usr/local/bin/vue-language-server',
+              \   args: ['--stdio'],
+              \   initializationOptions: #{
+              \       typescript: #{
+              \           tsdk: '/usr/local/bin/typescript-lib'
+              \       },
+              \       vue: #{
+              \           hybridMode: v:false
+              \       }
+              \   },
+              \ },
+              \ #{
+              \     name: 'rustlang',
+              \     filetype: ['rust'],
+              \     path: '/usr/local/bin/rust-analyzer',
+              \     args: [],
+              \     syncInit: v:true,
+              \ },
+              \ #{
+              \     name: 'intelephense',
+              \     filetype: ['php'],
+              \     path: '/usr/local/bin/intelephense',
+              \     args: ['--stdio']
+              \ },
+              \ ]
 
-      nnoremap <buffer> <expr><c-f> lsp#scroll(+4)
-      nnoremap <buffer> <expr><c-g> lsp#scroll(-4)
-
-      inoremap <expr> <cr>    pumvisible() ? asyncomplete#close_popup() : "\<cr>"
-
-      let g:lsp_format_sync_timeout = 1000
-
-      augroup lsp_autoformat
-          au!
-          autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
-      augroup END
-  endfunction
-
-  augroup lsp_install
+  augroup Lsp
       au!
-      autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
-  augroup END
+      autocmd User LspSetup call LspOptionsSet(lspOpts)
+      autocmd User LspSetup call LspAddServer(lspServers)
+      autocmd User LspAttached {
+          setlocal signcolumn=yes
+          setlocal tagfunc=lsp#lsp#TagFunc
+          setlocal formatexpr=lsp#lsp#FormatExpr()
+          setlocal keywordprg=:LspHover
 
-  let g:lsp_use_native_client = 1
-  let g:lsp_semantic_enabled = 0
-  let g:lsp_format_sync_timeout = 1000
-  let g:lsp_diagnostics_virtual_text_insert_mode_enabled = 0
-  let g:lsp_diagnostics_virtual_text_enabled = 0
-  let g:lsp_document_highlight_enabled = 0
-  let g:lsp_diagnostics_float_cursor = 1
-  " vue specific
-  let g:lsp_settings_filetype_vue = ['typescript-language-server', 'volar-server']
+          nmap <buffer> gd :LspGotoDefinition<CR>
+          nmap <buffer> gs :LspDocumentSymbol<CR>
+          nmap <buffer> gS :LspSymbolSearch<CR>
+          nmap <buffer> gr :LspShowReferences<CR>
+          nmap <buffer> gi :LspGotoImpl<CR>
+          nmap <buffer> gT :LspGotoTypeDef<CR>
+          nmap <buffer> <leader>rp :LspRename<CR>
+          nmap <buffer> <leader>ca :LspCodeAction<CR>
+          nmap <buffer> <leader>mf :LspFormat<CR>
+          nmap <buffer> <leader>td :LspDiag show<CR>
+
+          nmap <buffer> ]d :LspDiag next<CR>
+          nmap <buffer> [d :LspDiag prev<CR>
+      }
+  augroup END
 
   " lint/format
   nmap <silent> ]e <Plug>(ale_previous_wrap)

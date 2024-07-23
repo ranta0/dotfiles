@@ -108,10 +108,24 @@ RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
   && npm install -g \
   pnpm \
   eslint \
-  prettier
+  prettier \
+  intelephense \
+  typescript \
+  @vue/language-server
 
 # Install rust
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+
+# Install lsp packages
+RUN go install golang.org/x/tools/gopls@latest \
+  && ln -s /home/$USERNAME/go/bin/gopls $DEST/gopls \
+  && rustup component add rust-analyzer \
+  && ln -s /home/$USERNAME/.cargo/bin/rust-analyzer $DEST/rust-analyzer \
+  && NVM_CURRENT=$(nvm current) \
+  && ln -s /home/$USERNAME/.nvm/versions/node/$NVM_CURRENT/bin/tsserver $DEST/tsserver \
+  && ln -s /home/$USERNAME/.nvm/versions/node/$NVM_CURRENT/bin/intelephense $DEST/intelephense \
+  && ln -s /home/$USERNAME/.nvm/versions/node/$NVM_CURRENT/bin/vue-language-server $DEST/vue-language-server \
+  && ln -s /home/$USERNAME/.nvm/versions/node/$NVM_CURRENT/lib/node_modules/typescript/lib/ $DEST/typescript-lib
 
 # # Install krew
 # RUN set -x; cd "$(mktemp -d)" \
