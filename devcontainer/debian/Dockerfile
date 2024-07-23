@@ -96,7 +96,7 @@ WORKDIR /home/$USERNAME
 ENV TERM xterm-256color
 
 ENV NVM_DIR=/home/$USERNAME/.nvm
-ENV NODE_VERSION=20.10.0
+ENV NODE_VERSION=20.15.1
 ARG NVM_VERSION=0.39.7
 # Install nvm with node and npm
 RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
@@ -117,15 +117,15 @@ RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 
 # Install lsp packages
-RUN go install golang.org/x/tools/gopls@latest \
-  && ln -s /home/$USERNAME/go/bin/gopls $DEST/gopls \
-  && rustup component add rust-analyzer \
-  && ln -s /home/$USERNAME/.cargo/bin/rust-analyzer $DEST/rust-analyzer \
-  && NVM_CURRENT=$(nvm current) \
-  && ln -s /home/$USERNAME/.nvm/versions/node/$NVM_CURRENT/bin/tsserver $DEST/tsserver \
-  && ln -s /home/$USERNAME/.nvm/versions/node/$NVM_CURRENT/bin/intelephense $DEST/intelephense \
-  && ln -s /home/$USERNAME/.nvm/versions/node/$NVM_CURRENT/bin/vue-language-server $DEST/vue-language-server \
-  && ln -s /home/$USERNAME/.nvm/versions/node/$NVM_CURRENT/lib/node_modules/typescript/lib/ $DEST/typescript-lib
+RUN /usr/local/go/bin/go install golang.org/x/tools/gopls@latest \
+  && sudo ln -s /home/$USERNAME/go/bin/gopls $DEST/gopls \
+  && /home/$USERNAME/.cargo/bin/rustup component add rust-analyzer \
+  && sudo ln -s /home/$USERNAME/.cargo/bin/rust-analyzer $DEST/rust-analyzer
+
+RUN sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/tsserver $DEST/tsserver \
+  && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/intelephense $DEST/intelephense \
+  && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/vue-language-server $DEST/vue-language-server \
+  && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/lib/node_modules/typescript/lib/ $DEST/typescript-lib
 
 # # Install krew
 # RUN set -x; cd "$(mktemp -d)" \
@@ -155,8 +155,8 @@ RUN mkdir -p .config/nvim \
 
 # Install nvim packages
 # this is not working as intended
-RUN nvim --headless "+Lazy! sync" +qa \
-  && nvim --headless "+MasonToolsInstallSync" +qa
+# RUN nvim --headless "+Lazy! sync" +qa \
+#   && nvim --headless "+MasonToolsInstallSync" +qa
 
 # Install vim packages
 RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \
