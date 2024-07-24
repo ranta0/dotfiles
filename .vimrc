@@ -258,25 +258,23 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   " git
   Plug 'tpope/vim-fugitive'
   Plug 'airblade/vim-gitgutter'
-
   " utils
   Plug 'tpope/vim-commentary'
   Plug 'tpope/vim-sleuth'
   Plug 'mbbill/undotree'
   Plug 'skanehira/vsession'
-  Plug 'markonm/traces.vim'
   Plug 'habamax/vim-shout'
-
   " lsp/linter/formatter
   Plug 'dense-analysis/ale'
   Plug 'yegappan/lsp'
-
   " colors
   Plug 'joshdick/onedark.vim'
   Plug 'sheerun/vim-polyglot'
   call plug#end()
-
   " silent! colorscheme onedark
+
+  " commentstring
+  autocmd FileType php setlocal commentstring=//\ %s
 
   " git
   nnoremap <leader>gs :Git<CR>
@@ -291,55 +289,55 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   let g:vsession_save_last_on_leave = 1
 
   let lspOpts = #{
-              \ autoHighlightDiags: v:true,
-              \ ignoreMissingServer: v:true,
-              \ }
+  \   autoHighlightDiags: v:true,
+  \   ignoreMissingServer: v:true,
+  \ }
 
   let lspServers = [
-              \ #{
-              \     name: 'golang',
-              \     filetype: ['go', 'gomod'],
-              \     path: '/usr/local/bin/gopls',
-              \     args: ['serve'],
-              \     syncInit: v:true,
-              \     initializationOptions: #{
-              \         semanticTokens: v:true,
-              \     },
-              \ },
-              \ #{
-              \   name: 'tsserver',
-              \   filetype: ['javascript', 'typescript'],
-              \   path: '/usr/local/bin/tsserver',
-              \   args: ['--stdio'],
-              \ },
-              \ #{
-              \   name: 'vue-ls',
-              \   filetype: ['vue'],
-              \   path: '/usr/local/bin/vue-language-server',
-              \   args: ['--stdio'],
-              \   initializationOptions: #{
-              \       typescript: #{
-              \           tsdk: '/usr/local/bin/typescript-lib'
-              \       },
-              \       vue: #{
-              \           hybridMode: v:false
-              \       }
-              \   },
-              \ },
-              \ #{
-              \     name: 'rustlang',
-              \     filetype: ['rust'],
-              \     path: '/usr/local/bin/rust-analyzer',
-              \     args: [],
-              \     syncInit: v:true,
-              \ },
-              \ #{
-              \     name: 'intelephense',
-              \     filetype: ['php'],
-              \     path: '/usr/local/bin/intelephense',
-              \     args: ['--stdio']
-              \ },
-              \ ]
+  \ #{
+  \     name: 'golang',
+  \     filetype: ['go', 'gomod'],
+  \     path: '/usr/local/bin/gopls',
+  \     args: ['serve'],
+  \     syncInit: v:true,
+  \     initializationOptions: #{
+  \         semanticTokens: v:true,
+  \     },
+  \ },
+  \ #{
+  \     name: 'tsserver',
+  \     filetype: ['javascript', 'typescript'],
+  \     path: '/usr/local/bin/tsserver',
+  \     args: ['--stdio'],
+  \ },
+  \ #{
+  \     name: 'vue-ls',
+  \     filetype: ['vue'],
+  \     path: '/usr/local/bin/vue-language-server',
+  \     args: ['--stdio'],
+  \     initializationOptions: #{
+  \         typescript: #{
+  \             tsdk: '/usr/local/bin/typescript-lib'
+  \         },
+  \         vue: #{
+  \             hybridMode: v:false
+  \         }
+  \     },
+  \ },
+  \ #{
+  \     name: 'rustlang',
+  \     filetype: ['rust'],
+  \     path: '/usr/local/bin/rust-analyzer',
+  \     args: [],
+  \     syncInit: v:true,
+  \ },
+  \ #{
+  \     name: 'intelephense',
+  \     filetype: ['php'],
+  \     path: '/usr/local/bin/intelephense',
+  \     args: ['--stdio']
+  \ },
+  \ ]
 
   augroup Lsp
       au!
