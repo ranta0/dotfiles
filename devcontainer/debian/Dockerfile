@@ -111,6 +111,7 @@ RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
   prettier \
   intelephense \
   typescript \
+  typescript-language-server \
   @vue/language-server
 
 # Install rust
@@ -123,6 +124,7 @@ RUN /usr/local/go/bin/go install golang.org/x/tools/gopls@latest \
   && sudo ln -s /home/$USERNAME/.cargo/bin/rust-analyzer $DEST/rust-analyzer
 
 RUN sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/tsserver $DEST/tsserver \
+  && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/typescript-language-server $DEST/typescript-language-server \
   && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/intelephense $DEST/intelephense \
   && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/vue-language-server $DEST/vue-language-server \
   && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/lib/node_modules/typescript/lib/ $DEST/typescript-lib

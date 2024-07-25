@@ -59,24 +59,19 @@ nnoremap gQ <nop>
 nnoremap <F1> <esc>
 nnoremap ]w <C-w>w
 nnoremap [w <C-w>W
+nnoremap tr *Ncgn
 
 " tabs
 nnoremap <silent> <C-t> :tabnew<CR>
 nnoremap <C-l> gt
 nnoremap <C-h> gT
+" qf
+nnoremap <C-k> :cn<CR>
+nnoremap <C-j> :cp<CR>
 
 " completion
 inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-
-" qf
-nnoremap <C-k> :cn<CR>
-nnoremap <C-j> :cp<CR>
-nnoremap ]q :lnext<CR>
-nnoremap [q :lprevious<CR>
-
-" tools
-nnoremap tr *Ncgn
 
 " toggles
 nnoremap ,h :set hls!<CR>
@@ -87,10 +82,8 @@ nnoremap <expr> ,d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
 
 " leader keys
 let mapleader = ' '
-
-" tools
 nmap <silent> <leader>/ :let @/ = ""<CR>
-nnoremap <leader>sf :find *
+nnoremap <leader>sf :GitFiles <space>
 nnoremap <leader>sh :AllFiles <space>
 nnoremap <leader>? :OldFiles <space>
 nnoremap <leader>- :Ex<CR>
@@ -99,7 +92,6 @@ xnoremap <leader>y "+y
 nnoremap <leader>f :call g:RangerExplorer()<CR>
 nnoremap <leader>sg :call QFGrep(1)<CR>
 nnoremap <leader>sG :call QFGrep(0)<CR>
-nnoremap <silent> <leader>cd :lcd%:p:h<CR>:call g:SetPath()<CR>:pwd<CR>
 nnoremap <leader><leader> :b *
 
 " theme
@@ -157,7 +149,6 @@ function! g:Buflisted()
         let [b1, b2] = map(copy(a:000), 'get(g:buffers, v:val, v:val)')
         return b1 < b2 ? 1 : -1
     endfunction
-
     function! s:buflisted()
         return filter(range(1, bufnr('$')), 'buflisted(v:val) && getbufvar(v:val, "&filetype") != "qf"')
     endfunction
@@ -183,14 +174,12 @@ function! g:OldFiles(a,...)
                 \   + filter(map(g:Buflisted(), 'bufname(v:val)'), 'len(v:val)')
                 \   + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
                 \ 'fnamemodify(v:val, ":~:.")'))
-
     return copy(l:recent_files)->filter('v:val =~ a:a')
 endfunction
 " end recent files
 
 function! g:AllFiles(a,...)
-    let l:result = system("find . -type f 2>&1 | grep -v 'Permission denied'")
-    let l:files = split(l:result, "\n")
+    let l:files = systemlist("find . -type f 2>&1 | grep -v 'Permission denied'")
     if v:version >= 900
         return matchfuzzy(l:files, a:a)
     else
@@ -198,9 +187,12 @@ function! g:AllFiles(a,...)
     endif
 endfunction
 
-function! g:SetPath()
-    if isdirectory('.git')
-        silent! let &path .= join(systemlist('git ls-tree -d --name-only -r HEAD'), ',')
+function! g:GitFiles(a,...)
+    let l:files = systemlist("git ls-tree --name-only -r HEAD")
+    if v:version >= 900
+        return matchfuzzy(l:files, a:a)
+    else
+        return copy(l:files)->filter('v:val =~ a:a')
     endif
 endfunction
 " end functions
@@ -209,25 +201,18 @@ endfunction
 command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
 
-" custom pickers
 command -nargs=1 -complete=customlist,OldFiles OldFiles edit <args>
 command -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
+command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 " end commands
 
 " autocmds
 augroup vimrc
-      autocmd!
+    autocmd!
+    " close quickfix window when it is the only window
+    autocmd WinEnter * if &l:buftype ==# 'quickfix' && winnr('$') == 1 && has('timers')
+                \ | call timer_start(0, {-> execute('quit') }) | endif
 augroup END
-
-" close qf/lf when picked an item
-autocmd vimrc FileType qf nnoremap <buffer> <CR> <CR>:cclose<CR>:lclose<CR>
-
-" close quickfix window when it is the only window
-autocmd vimrc WinEnter * if &l:buftype ==# 'quickfix' && winnr('$') == 1 && has('timers')
-            \ | call timer_start(0, {-> execute('quit') }) | endif
-
-" git powered path
-autocmd vimrc VimEnter,BufReadPost,BufNewFile * :call g:SetPath()
 
 " https://github.com/junegunn/fzf.vim
 let g:buffers = {}
@@ -242,55 +227,33 @@ augroup buffers
 augroup END
 " end autocmds
 
-" packadd! matchit
-" packadd! cfilter
-" packadd! editorconfig
-
 " Install plug like this
 " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-"
-" only load plugins if plug detected
 if filereadable(expand('~/.vim/autoload/plug.vim'))
   " it works on nvim as well like this
   silent! exec 'source ~/.vim/autoload/plug.vim'
 
   call plug#begin()
-  " git
   Plug 'tpope/vim-fugitive'
   Plug 'airblade/vim-gitgutter'
-  " utils
   Plug 'tpope/vim-commentary'
   Plug 'tpope/vim-sleuth'
-  Plug 'mbbill/undotree'
-  Plug 'skanehira/vsession'
-  Plug 'habamax/vim-shout'
-  " lsp/linter/formatter
   Plug 'dense-analysis/ale'
   Plug 'yegappan/lsp'
   " colors
   Plug 'joshdick/onedark.vim'
   Plug 'sheerun/vim-polyglot'
   call plug#end()
-  " silent! colorscheme onedark
-
-  " commentstring
-  autocmd FileType php setlocal commentstring=//\ %s
-
+  silent! colorscheme onedark
   " git
   nnoremap <leader>gs :Git<CR>
   nmap ]h <Plug>(GitGutterNextHunk)
   nmap [h <Plug>(GitGutterPrevHunk)
 
-  " utils
-  nnoremap <leader>u :UndotreeToggle<CR><CMD>UndotreeFocus<CR><CR>
-
-  " session
-  let g:vsession_path = '~/.vim/sessions'
-  let g:vsession_save_last_on_leave = 1
-
   let lspOpts = #{
   \   autoHighlightDiags: v:true,
-  \   ignoreMissingServer: v:true,
+  \   ignoreMissingServer: v:false,
+  \   aleSupport: v:true,
   \ }
 
   let lspServers = [
@@ -307,7 +270,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   \ #{
   \     name: 'tsserver',
   \     filetype: ['javascript', 'typescript'],
-  \     path: '/usr/local/bin/tsserver',
+  \     path: '/usr/local/bin/typescript-language-server',
   \     args: ['--stdio'],
   \ },
   \ #{
@@ -358,21 +321,16 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
           nmap <buffer> <leader>rp :LspRename<CR>
           nmap <buffer> <leader>ca :LspCodeAction<CR>
           nmap <buffer> <leader>mf :LspFormat<CR>
-          nmap <buffer> <leader>td :LspDiag show<CR>
 
           nmap <buffer> ]d :LspDiag next<CR>
           nmap <buffer> [d :LspDiag prev<CR>
       }
   augroup END
 
-  " lint/format
-  nmap <silent> ]e <Plug>(ale_previous_wrap)
-  nmap <silent> [e <Plug>(ale_next_wrap)
-  nmap <leader>te :ALEPopulateQuickfix<CR>:copen<CR>
-
-  let g:ale_sign_error = 'E>'
-  let g:ale_sign_warning = 'W>'
-  let g:ale_sign_info = 'I>'
+  nmap <leader>td :ALEPopulateQuickfix<CR>:copen<CR>
+  let g:ale_sign_error = 'E '
+  let g:ale_sign_warning = 'W '
+  let g:ale_sign_info = 'I '
 
   let g:ale_linters_explicit = 1
   let g:ale_linters = {
@@ -399,4 +357,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   \   'sh': ['shfmt'],
   \   'go': ['gofmt'],
   \}
+
+  " commentstrings
+  autocmd FileType php setlocal commentstring=//\ %s
 endif
