@@ -236,7 +236,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   call plug#begin()
   Plug 'tpope/vim-fugitive'
   Plug 'airblade/vim-gitgutter'
-  if v:version <= 900 | Plug 'tpope/vim-commentary' | else | packadd! comment | endif
+  Plug 'tpope/vim-commentary'
   Plug 'tpope/vim-sleuth'
   Plug 'dense-analysis/ale'
   Plug 'yegappan/lsp'
@@ -252,7 +252,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
 
   let lspOpts = #{
   \   autoHighlightDiags: v:true,
-  \   ignoreMissingServer: v:false,
+  \   ignoreMissingServer: v:true,
   \   aleSupport: v:true,
   \ }
 
