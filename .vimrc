@@ -156,6 +156,14 @@ function! g:Buflisted()
     return sort(s:buflisted(), 's:sort_buffers')
 endfunction
 
+function! g:Fuzzy(files, args)
+    if v:version >= 900 && !empty(a:args)
+        return matchfuzzy(a:files, a:args)
+    else
+        return copy(a:files)->filter('v:val =~ a:args')
+    endif
+endfunction
+
 function! g:OldFiles(a,...)
     function! s:unique(list)
         let visited = {}
@@ -169,31 +177,23 @@ function! g:OldFiles(a,...)
         return ret
     endfunction
 
-    let l:recent_files = s:unique(map(
+    let l:files = s:unique(map(
                 \ filter([expand('%')], 'len(v:val)')
                 \   + filter(map(g:Buflisted(), 'bufname(v:val)'), 'len(v:val)')
                 \   + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
                 \ 'fnamemodify(v:val, ":~:.")'))
-    return copy(l:recent_files)->filter('v:val =~ a:a')
+    return g:Fuzzy(l:files, a:a)
 endfunction
 " end recent files
 
 function! g:AllFiles(a,...)
     let l:files = systemlist("find . -type f 2>&1 | grep -v 'Permission denied'")
-    if v:version >= 900
-        return matchfuzzy(l:files, a:a)
-    else
-        return copy(l:files)->filter('v:val =~ a:a')
-    endif
+    return g:Fuzzy(l:files, a:a)
 endfunction
 
 function! g:GitFiles(a,...)
     let l:files = systemlist("git ls-tree --name-only -r HEAD")
-    if v:version >= 900
-        return matchfuzzy(l:files, a:a)
-    else
-        return copy(l:files)->filter('v:val =~ a:a')
-    endif
+    return g:Fuzzy(l:files, a:a)
 endfunction
 " end functions
 
@@ -236,7 +236,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   call plug#begin()
   Plug 'tpope/vim-fugitive'
   Plug 'airblade/vim-gitgutter'
-  Plug 'tpope/vim-commentary'
+  if v:version <= 900 | Plug 'tpope/vim-commentary' | else | packadd! comment | endif
   Plug 'tpope/vim-sleuth'
   Plug 'dense-analysis/ale'
   Plug 'yegappan/lsp'
