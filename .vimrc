@@ -253,6 +253,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   let lspOpts = #{
   \   autoHighlightDiags: v:true,
   \   ignoreMissingServer: v:true,
+  \   useBufferCompletion: v:true,
   \   aleSupport: v:true,
   \ }
 
