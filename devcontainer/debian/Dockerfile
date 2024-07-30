@@ -1,7 +1,7 @@
-FROM debian:trixie-slim
+FROM debian:12-slim
 
 ARG DEST=/usr/local/bin
-ARG WORK_DIR=/tmp
+ARG WORK_DIR=/opt
 WORKDIR $WORK_DIR
 
 RUN apt-get update \
@@ -23,16 +23,18 @@ RUN apt-get update \
   lsb-release \
   ripgrep \
   jq \
-  vim-gtk3 \
   tmux \
   bash-completion \
   wget \
-  make \
   fzf \
   zoxide \
   ranger \
   highlight \
-  pandoc \
+  make \
+  clang \
+  libtool-bin \
+  libxt-dev \
+  libncurses-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -50,9 +52,13 @@ RUN adduser \
 RUN passwd -d $USERNAME \
   && usermod -aG sudo $USERNAME
 
+# Install vim
+RUN git clone https://github.com/vim/vim.git $WORD_DIR/vim \
+  && cd $WORD_DIR/vim/src \
+  && sudo make install
+
 ARG PHP_VERSION=8.3
-# hardcode bookworm, because trixie doesn't have a release yet
-RUN /bin/sh -c 'echo "deb https://packages.sury.org/php/ bookworm main" > /etc/apt/sources.list.d/php.list' \
+RUN /bin/sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
   && wget -qO - https://packages.sury.org/php/apt.gpg | apt-key add
 
 RUN apt-get update \
@@ -79,6 +85,12 @@ RUN curl -sLo go$GO_VERSION.linux-amd64.tar.gz "https://go.dev//dl/go$GO_VERSION
 
 # # Install Azure CLI
 # RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash -s -- -y
+
+# Install pandoc
+ARG PANDOC_VERSION=3.3
+RUN curl -sLo pandoc-$PANDOC_VERSION.tar.gz "https://github.com/jgm/pandoc/releases/download/$PANDOC_VERSION/pandoc-$PANDOC_VERSION-linux-amd64.tar.gz" \
+  && tar xzf pandoc-$PANDOC_VERSION.tar.gz \
+  && ln -s $WORK_DIR/pandoc-$PANDOC_VERSION/bin/pandoc $DEST/pandoc
 
 # neovim release
 ARG NVIM_VERSION=0.10.0
