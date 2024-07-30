@@ -240,6 +240,9 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   Plug 'tpope/vim-sleuth'
   Plug 'dense-analysis/ale'
   Plug 'yegappan/lsp'
+  Plug 'girishji/devdocs.vim'
+  Plug 'girishji/autosuggest.vim'
+  Plug 'girishji/vimcomplete'
   " colors
   Plug 'joshdick/onedark.vim'
   Plug 'sheerun/vim-polyglot'
@@ -253,7 +256,6 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
   let lspOpts = #{
   \   autoHighlightDiags: v:true,
   \   ignoreMissingServer: v:true,
-  \   useBufferCompletion: v:true,
   \   aleSupport: v:true,
   \ }
 

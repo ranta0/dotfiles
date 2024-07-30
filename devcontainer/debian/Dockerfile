@@ -1,4 +1,4 @@
-FROM debian:12-slim
+FROM debian:trixie-slim
 
 ARG DEST=/usr/local/bin
 ARG WORK_DIR=/tmp
@@ -32,6 +32,7 @@ RUN apt-get update \
   zoxide \
   ranger \
   highlight \
+  pandoc \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -50,7 +51,8 @@ RUN passwd -d $USERNAME \
   && usermod -aG sudo $USERNAME
 
 ARG PHP_VERSION=8.3
-RUN /bin/sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
+# hardcode bookworm, because trixie doesn't have a release yet
+RUN /bin/sh -c 'echo "deb https://packages.sury.org/php/ bookworm main" > /etc/apt/sources.list.d/php.list' \
   && wget -qO - https://packages.sury.org/php/apt.gpg | apt-key add
 
 RUN apt-get update \
