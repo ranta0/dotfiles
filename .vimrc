@@ -8,14 +8,13 @@ set termguicolors
 set number relativenumber nowrap
 set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent
 set scrolloff=8
-
 set nohidden autoread
 
 set list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 set hlsearch incsearch
 
 set showcmd noruler laststatus=2
-set statusline=[%n]\ %<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
+set statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 
 set path=.,,
 set wildmenu
@@ -59,8 +58,11 @@ nnoremap gQ <nop>
 nnoremap <F1> <esc>
 nnoremap ]w <C-w>w
 nnoremap [w <C-w>W
-nnoremap tr *Ncgn
-
+" splits
+nnoremap <silent> <C-Up> :resize +5<cr>
+nnoremap <silent> <C-Down> :resize -5<cr>
+nnoremap <silent> <C-Right> :vertical resize -5<cr>
+nnoremap <silent> <C-Left> :vertical resize +5<cr>
 " tabs
 nnoremap <silent> <C-t> :tabnew<CR>
 nnoremap <C-l> gt
@@ -68,13 +70,10 @@ nnoremap <C-h> gT
 " qf
 nnoremap <C-k> :cn<CR>
 nnoremap <C-j> :cp<CR>
-
 " completion
 inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-
 " toggles
-nnoremap ,h :set hls!<CR>
 nnoremap ,n :set relativenumber!<CR>
 nnoremap ,w :set wrap!<CR>
 nnoremap ,p :set paste!<CR>
@@ -94,37 +93,38 @@ nnoremap <leader>sg :call QFGrep(1)<CR>
 nnoremap <leader>sG :call QFGrep(0)<CR>
 nnoremap <leader><leader> :b *
 
-" theme
-" thanks to https://github.com/karoliskoncevicius/oldbook-vim/blob/master/colors/oldbook.vim
+"theme
 colorscheme slate
 if v:version >= 900 | colorscheme habamax | endif
-hi DiffAdd          ctermbg=72   ctermfg=238  cterm=NONE        guibg=#5bb899 guifg=#3c4855 gui=NONE
-hi DiffDelete       ctermbg=167  ctermfg=238  cterm=NONE        guibg=#db6c6c guifg=#3c4855 gui=NONE
-hi DiffChange       ctermbg=238  ctermfg=178  cterm=UNDERLINE   guibg=#3c4855 guifg=#d5bc02 gui=UNDERLINE
-hi DiffText         ctermbg=178  ctermfg=238  cterm=NONE        guibg=#d5bc02 guifg=#3c4855 gui=NONE
-hi link diffBDiffer        WarningMsg
-hi link diffCommon         WarningMsg
-hi link diffDiffer         WarningMsg
-hi link diffIdentical      WarningMsg
-hi link diffIsA            WarningMsg
-hi link diffNoEOL          WarningMsg
-hi link diffOnly           WarningMsg
-hi link diffRemoved        WarningMsg
-hi link diffAdded          String
-" end theme
 
 " functions
+function! g:DiffColors()
+    hi DiffAdd          ctermbg=72   ctermfg=238  cterm=NONE        guibg=#5bb899 guifg=#3c4855 gui=NONE
+    hi DiffDelete       ctermbg=167  ctermfg=238  cterm=NONE        guibg=#db6c6c guifg=#3c4855 gui=NONE
+    hi DiffChange       ctermbg=238  ctermfg=178  cterm=UNDERLINE   guibg=#3c4855 guifg=#d5bc02 gui=UNDERLINE
+    hi DiffText         ctermbg=178  ctermfg=238  cterm=NONE        guibg=#d5bc02 guifg=#3c4855 gui=NONE
+    hi link diffBDiffer        WarningMsg
+    hi link diffCommon         WarningMsg
+    hi link diffDiffer         WarningMsg
+    hi link diffIdentical      WarningMsg
+    hi link diffIsA            WarningMsg
+    hi link diffNoEOL          WarningMsg
+    hi link diffOnly           WarningMsg
+    hi link diffRemoved        WarningMsg
+    hi link diffAdded          String
+endfunction
+
 function! g:QFGrep(ignore_case)
-  let l:search_pattern = input('Grep > ')
-  let l:cmd = 'silent grep! '.l:search_pattern
-  if a:ignore_case
-    let l:cmd = l:cmd . ' --ignore-case'
-  endif
-  if !empty(l:search_pattern)
-    execute l:cmd
-    redraw!
-    copen
-  endif
+    let l:search_pattern = input('Grep > ')
+    let l:cmd = 'silent grep! '.l:search_pattern
+    if a:ignore_case
+        let l:cmd = l:cmd . ' --ignore-case'
+    endif
+    if !empty(l:search_pattern)
+        execute l:cmd
+        redraw!
+        copen
+    endif
 endfunction
 
 function! g:RangerExplorer()
@@ -139,8 +139,15 @@ function! g:RangerExplorer()
     else
         echohl ErrorMsg | echo 'No file chosen or ranger command failed' | echohl None
     endif
-
     redraw!
+endfunction
+
+function! g:Fuzzy(files, args)
+    if v:version >= 900 && !empty(a:args)
+        return matchfuzzy(a:files, a:args)
+    else
+        return copy(a:files)->filter('v:val =~ a:args')
+    endif
 endfunction
 
 " copied recent_files from https://github.com/junegunn/fzf.vim
@@ -154,14 +161,6 @@ function! g:Buflisted()
     endfunction
 
     return sort(s:buflisted(), 's:sort_buffers')
-endfunction
-
-function! g:Fuzzy(files, args)
-    if v:version >= 900 && !empty(a:args)
-        return matchfuzzy(a:files, a:args)
-    else
-        return copy(a:files)->filter('v:val =~ a:args')
-    endif
 endfunction
 
 function! g:OldFiles(a,...)
@@ -209,6 +208,9 @@ command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 " autocmds
 augroup vimrc
     autocmd!
+    " set colors in diffmode
+    autocmd DiffUpdated * call g:DiffColors()
+
     " close quickfix window when it is the only window
     autocmd WinEnter * if &l:buftype ==# 'quickfix' && winnr('$') == 1 && has('timers')
                 \ | call timer_start(0, {-> execute('quit') }) | endif
@@ -230,137 +232,138 @@ augroup END
 " Install plug like this
 " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 if filereadable(expand('~/.vim/autoload/plug.vim'))
-  " it works on nvim as well like this
-  silent! exec 'source ~/.vim/autoload/plug.vim'
+    " it works on nvim as well adding this line
+    " silent! exec 'source ~/.vim/autoload/plug.vim'
+    call plug#begin()
+    Plug 'tpope/vim-fugitive'
+    Plug 'airblade/vim-gitgutter'
+    Plug 'tpope/vim-commentary'
+    Plug 'tpope/vim-sleuth'
+    Plug 'dense-analysis/ale'
+    Plug 'yegappan/lsp'
+    Plug 'girishji/devdocs.vim'
+    Plug 'girishji/autosuggest.vim'
+    Plug 'girishji/vimcomplete'
+    " colors
+    Plug 'joshdick/onedark.vim'
+    Plug 'sheerun/vim-polyglot'
+    call plug#end()
 
-  call plug#begin()
-  Plug 'tpope/vim-fugitive'
-  Plug 'airblade/vim-gitgutter'
-  Plug 'tpope/vim-commentary'
-  Plug 'tpope/vim-sleuth'
-  Plug 'dense-analysis/ale'
-  Plug 'yegappan/lsp'
-  Plug 'girishji/devdocs.vim'
-  Plug 'girishji/autosuggest.vim'
-  Plug 'girishji/vimcomplete'
-  " colors
-  Plug 'joshdick/onedark.vim'
-  Plug 'sheerun/vim-polyglot'
-  call plug#end()
-  silent! colorscheme onedark
-  " git
-  nnoremap <leader>gs :Git<CR>
-  nmap ]h <Plug>(GitGutterNextHunk)
-  nmap [h <Plug>(GitGutterPrevHunk)
+    silent! colorscheme onedark
+    " git
+    nnoremap <leader>gs :Git<CR>
+    nmap ]h <Plug>(GitGutterNextHunk)
+    nmap [h <Plug>(GitGutterPrevHunk)
 
-  let lspOpts = #{
-  \   autoHighlightDiags: v:true,
-  \   ignoreMissingServer: v:true,
-  \   aleSupport: v:true,
-  \ }
+    let lspOpts = #{
+                \   autoHighlightDiags: v:true,
+                \   ignoreMissingServer: v:true,
+                \   useQuickfixForLocations: v:true,
+                \   aleSupport: v:true,
+                \ }
 
-  let lspServers = [
-  \ #{
-  \     name: 'golang',
-  \     filetype: ['go', 'gomod'],
-  \     path: '/usr/local/bin/gopls',
-  \     args: ['serve'],
-  \     syncInit: v:true,
-  \     initializationOptions: #{
-  \         semanticTokens: v:true,
-  \     },
-  \ },
-  \ #{
-  \     name: 'tsserver',
-  \     filetype: ['javascript', 'typescript'],
-  \     path: '/usr/local/bin/typescript-language-server',
-  \     args: ['--stdio'],
-  \ },
-  \ #{
-  \     name: 'vue-ls',
-  \     filetype: ['vue'],
-  \     path: '/usr/local/bin/vue-language-server',
-  \     args: ['--stdio'],
-  \     initializationOptions: #{
-  \         typescript: #{
-  \             tsdk: '/usr/local/bin/typescript-lib'
-  \         },
-  \         vue: #{
-  \             hybridMode: v:false
-  \         }
-  \     },
-  \ },
-  \ #{
-  \     name: 'rustlang',
-  \     filetype: ['rust'],
-  \     path: '/usr/local/bin/rust-analyzer',
-  \     args: [],
-  \     syncInit: v:true,
-  \ },
-  \ #{
-  \     name: 'intelephense',
-  \     filetype: ['php'],
-  \     path: '/usr/local/bin/intelephense',
-  \     args: ['--stdio']
-  \ },
-  \ ]
+    let lspServers = [
+                \ #{
+                \     name: 'golang',
+                \     filetype: ['go', 'gomod'],
+                \     path: '/usr/local/bin/gopls',
+                \     args: ['serve'],
+                \     syncInit: v:true,
+                \     initializationOptions: #{
+                \         semanticTokens: v:true,
+                \     },
+                \ },
+                \ #{
+                \     name: 'tsserver',
+                \     filetype: ['javascript', 'typescript'],
+                \     path: '/usr/local/bin/typescript-language-server',
+                \     args: ['--stdio'],
+                \ },
+                \ #{
+                \     name: 'vue-ls',
+                \     filetype: ['vue'],
+                \     path: '/usr/local/bin/vue-language-server',
+                \     args: ['--stdio'],
+                \     initializationOptions: #{
+                \         typescript: #{
+                \             tsdk: '/usr/local/bin/typescript-lib'
+                \         },
+                \         vue: #{
+                \             hybridMode: v:false
+                \         }
+                \     },
+                \ },
+                \ #{
+                \     name: 'rustlang',
+                \     filetype: ['rust'],
+                \     path: '/usr/local/bin/rust-analyzer',
+                \     args: [],
+                \     syncInit: v:true,
+                \ },
+                \ #{
+                \     name: 'intelephense',
+                \     filetype: ['php'],
+                \     path: '/usr/local/bin/intelephense',
+                \     args: ['--stdio']
+                \ },
+                \ ]
 
-  augroup Lsp
-      au!
-      autocmd User LspSetup call LspOptionsSet(lspOpts)
-      autocmd User LspSetup call LspAddServer(lspServers)
-      autocmd User LspAttached {
-          setlocal signcolumn=yes
-          setlocal tagfunc=lsp#lsp#TagFunc
-          setlocal formatexpr=lsp#lsp#FormatExpr()
-          setlocal keywordprg=:LspHover
+    augroup Lsp
+        au!
+        autocmd User LspSetup call LspOptionsSet(lspOpts)
+        autocmd User LspSetup call LspAddServer(lspServers)
+        autocmd User LspAttached {
+            setlocal signcolumn=yes
+            setlocal tagfunc=lsp#lsp#TagFunc
+            setlocal formatexpr=lsp#lsp#FormatExpr()
+            setlocal keywordprg=:LspHover
 
-          nmap <buffer> gd :LspGotoDefinition<CR>
-          nmap <buffer> gs :LspDocumentSymbol<CR>
-          nmap <buffer> gS :LspSymbolSearch<CR>
-          nmap <buffer> gr :LspShowReferences<CR>
-          nmap <buffer> gi :LspGotoImpl<CR>
-          nmap <buffer> gT :LspGotoTypeDef<CR>
-          nmap <buffer> <leader>rp :LspRename<CR>
-          nmap <buffer> <leader>ca :LspCodeAction<CR>
-          nmap <buffer> <leader>mf :LspFormat<CR>
+            nmap <buffer> gd :LspGotoDefinition<CR>
+            nmap <buffer> gs :LspDocumentSymbol<CR>
+            nmap <buffer> gS :LspSymbolSearch<CR>
+            nmap <buffer> gr :LspShowReferences<CR>
+            nmap <buffer> gi :LspGotoImpl<CR>
+            nmap <buffer> gT :LspGotoTypeDef<CR>
+            nmap <buffer> <leader>rp :LspRename<CR>
+            nmap <buffer> <leader>ca :LspCodeAction<CR>
+            nmap <buffer> <leader>mf :LspFormat<CR>
 
-          nmap <buffer> ]d :LspDiag next<CR>
-          nmap <buffer> [d :LspDiag prev<CR>
-      }
-  augroup END
+            nmap <buffer> ]d :LspDiag next<CR>
+            nmap <buffer> [d :LspDiag prev<CR>
+        }
+    augroup END
 
-  nmap <leader>td :ALEPopulateQuickfix<CR>:copen<CR>
-  let g:ale_sign_error = 'E '
-  let g:ale_sign_warning = 'W '
-  let g:ale_sign_info = 'I '
+    nmap <leader>td :ALEPopulateQuickfix<CR>:copen<CR>
+    let g:ale_sign_error = 'E '
+    let g:ale_sign_warning = 'W '
+    let g:ale_sign_info = 'I '
 
-  let g:ale_linters_explicit = 1
-  let g:ale_linters = {
-  \   'php': ['phpstan'],
-  \   'typescript': ['eslint'],
-  \   'javascript': ['eslint'],
-  \   'vue': ['eslint'],
-  \   'vim': ['vint'],
-  \}
+    let g:ale_linters_explicit = 1
+    let g:ale_linters = {
+                \   'php': ['phpstan'],
+                \   'typescript': ['eslint'],
+                \   'javascript': ['eslint'],
+                \   'vue': ['eslint'],
+                \   'vim': ['vint'],
+                \}
 
-  let g:ale_fix_on_save = 1
-  let g:ale_fixers = {
-  \   '*': ['remove_trailing_lines', 'trim_whitespace'],
-  \   'javascript': ['prettier'],
-  \   'typescript': ['prettier'],
-  \   'vue': ['prettier'],
-  \   'svelte': ['prettier'],
-  \   'css': ['prettier'],
-  \   'html': ['prettier'],
-  \   'json': ['prettier'],
-  \   'yaml': ['prettier'],
-  \   'markdown': ['prettier'],
-  \   'lua': ['stylua'],
-  \   'sh': ['shfmt'],
-  \   'go': ['gofmt'],
-  \}
+    let g:ale_fix_on_save = 1
+    let g:ale_fixers = {
+                \   '*': ['remove_trailing_lines', 'trim_whitespace'],
+                \   'javascript': ['prettier'],
+                \   'typescript': ['prettier'],
+                \   'vue': ['prettier'],
+                \   'svelte': ['prettier'],
+                \   'css': ['prettier'],
+                \   'html': ['prettier'],
+                \   'json': ['prettier'],
+                \   'yaml': ['prettier'],
+                \   'markdown': ['prettier'],
+                \   'lua': ['stylua'],
+                \   'sh': ['shfmt'],
+                \   'go': ['gofmt'],
+                \}
 
-  " commentstrings
-  autocmd FileType php setlocal commentstring=//\ %s
+    " commentstrings
+    autocmd FileType php setlocal commentstring=//\ %s
 endif
