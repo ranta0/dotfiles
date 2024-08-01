@@ -84,7 +84,7 @@ let mapleader = ' '
 nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sf :GitFiles <space>
 nnoremap <leader>sh :AllFiles <space>
-nnoremap <leader>? :OldFiles <space>
+nnoremap <leader>? :RecentFiles <space>
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
@@ -150,20 +150,7 @@ function! g:Fuzzy(files, args)
     endif
 endfunction
 
-" copied recent_files from https://github.com/junegunn/fzf.vim
-function! g:Buflisted()
-    function! s:sort_buffers(...)
-        let [b1, b2] = map(copy(a:000), 'get(g:buffers, v:val, v:val)')
-        return b1 < b2 ? 1 : -1
-    endfunction
-    function! s:buflisted()
-        return filter(range(1, bufnr('$')), 'buflisted(v:val) && getbufvar(v:val, "&filetype") != "qf"')
-    endfunction
-
-    return sort(s:buflisted(), 's:sort_buffers')
-endfunction
-
-function! g:OldFiles(a,...)
+function! g:RecentFiles(a,...)
     function! s:unique(list)
         let visited = {}
         let ret = []
@@ -177,13 +164,11 @@ function! g:OldFiles(a,...)
     endfunction
 
     let l:files = s:unique(map(
-                \ filter([expand('%')], 'len(v:val)')
-                \   + filter(map(g:Buflisted(), 'bufname(v:val)'), 'len(v:val)')
+                \   filter(copy(g:recent_files), "filereadable(fnamemodify(v:val, ':p'))")
                 \   + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
                 \ 'fnamemodify(v:val, ":~:.")'))
     return g:Fuzzy(l:files, a:a)
 endfunction
-" end recent files
 
 function! g:AllFiles(a,...)
     let l:files = systemlist("find . -type f 2>&1 | grep -v 'Permission denied'")
@@ -200,7 +185,7 @@ endfunction
 command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
 
-command -nargs=1 -complete=customlist,OldFiles OldFiles edit <args>
+command -nargs=1 -complete=customlist,RecentFiles RecentFiles edit <args>
 command -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
 command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 " end commands
@@ -216,16 +201,20 @@ augroup vimrc
                 \ | call timer_start(0, {-> execute('quit') }) | endif
 augroup END
 
-" https://github.com/junegunn/fzf.vim
-let g:buffers = {}
-augroup buffers
+let g:recent_files = []
+augroup mru
     autocmd!
-    if exists('*reltimefloat')
-        autocmd BufWinEnter,WinEnter * let g:buffers[bufnr('')] = reltimefloat(reltime())
-    else
-        autocmd BufWinEnter,WinEnter * let g:buffers[bufnr('')] = localtime()
-    endif
-    autocmd BufDelete * silent! call remove(g:buffers, expand('<abuf>'))
+
+    function! s:AddRecentFile(bufnr)
+        if !empty(&buftype)
+            return
+        endif
+        let fname = fnamemodify(bufname(a:bufnr + 0), ':p')
+        call filter(g:recent_files, 'v:val !=# fname')
+        call insert(g:recent_files, fname, 0)
+    endfunction
+
+    autocmd BufRead,BufWritePost,BufEnter * call s:AddRecentFile(expand('<abuf>'))
 augroup END
 " end autocmds
 
