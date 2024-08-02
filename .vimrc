@@ -21,19 +21,12 @@ set wildmenu
 if v:version >= 900 | set wildoptions=pum | endif
 set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 
-set nobackup noswapfile
+set nobackup noswapfile undofile
 set updatetime=50 lazyredraw ttyfast
 set ttimeoutlen=50
 
 set grepprg=grep\ -rnH\ --exclude-dir={.git,node_modules,vendor}
 set grepformat=%f:%l:%m
-
-" undo
-let $UNDO_DATA = $HOME . '/.vim/undo'
-if v:version >= 703
-    silent !mkdir -p $UNDO_DATA
-    set undofile undodir=$UNDO_DATA
-endif
 
 " cursor modes
 let &t_SI = "\<Esc>[6 q"
@@ -88,7 +81,7 @@ nnoremap <leader>? :RecentFiles <space>
 nnoremap <leader>- :Ex<CR>
 vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
-nnoremap <leader>f :call g:RangerExplorer()<CR>
+nnoremap <leader>f :call RangerExplorer()<CR>
 nnoremap <leader>sg :call QFGrep(1)<CR>
 nnoremap <leader>sG :call QFGrep(0)<CR>
 nnoremap <leader><leader> :b *
@@ -98,20 +91,42 @@ colorscheme slate
 if v:version >= 900 | colorscheme habamax | endif
 
 " functions
-function! g:DiffColors()
-    hi DiffAdd          ctermbg=72   ctermfg=238  cterm=NONE        guibg=#5bb899 guifg=#3c4855 gui=NONE
-    hi DiffDelete       ctermbg=167  ctermfg=238  cterm=NONE        guibg=#db6c6c guifg=#3c4855 gui=NONE
-    hi DiffChange       ctermbg=238  ctermfg=178  cterm=UNDERLINE   guibg=#3c4855 guifg=#d5bc02 gui=UNDERLINE
-    hi DiffText         ctermbg=178  ctermfg=238  cterm=NONE        guibg=#d5bc02 guifg=#3c4855 gui=NONE
-    hi link diffBDiffer        WarningMsg
-    hi link diffCommon         WarningMsg
-    hi link diffDiffer         WarningMsg
-    hi link diffIdentical      WarningMsg
-    hi link diffIsA            WarningMsg
-    hi link diffNoEOL          WarningMsg
-    hi link diffOnly           WarningMsg
-    hi link diffRemoved        WarningMsg
-    hi link diffAdded          String
+function! s:Fuzzy(files, args)
+    if v:version >= 900 && !empty(a:args)
+        return matchfuzzy(a:files, a:args)
+    else
+        return copy(a:files)->filter('v:val =~ a:args')
+    endif
+endfunction
+
+function! s:RecentFiles(a,...)
+    function! s:unique(list)
+        let visited = {}
+        let ret = []
+        for l in a:list
+            if !empty(l) && !has_key(visited, l)
+                call add(ret, l)
+                let visited[l] = 1
+            endif
+        endfor
+        return ret
+    endfunction
+
+    let l:files = s:unique(map(
+                \  filter(copy(g:recent_files), "filereadable(fnamemodify(v:val, ':p'))")
+                \  + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
+                \ 'fnamemodify(v:val, ":~:.")'))
+    return s:Fuzzy(l:files, a:a)
+endfunction
+
+function! s:AllFiles(a,...)
+    let l:files = systemlist("find . -type f 2>&1 | grep -v 'Permission denied'")
+    return s:Fuzzy(l:files, a:a)
+endfunction
+
+function! s:GitFiles(a,...)
+    let l:files = systemlist("git ls-tree --name-only -r HEAD")
+    return s:Fuzzy(l:files, a:a)
 endfunction
 
 function! g:QFGrep(ignore_case)
@@ -141,60 +156,38 @@ function! g:RangerExplorer()
     endif
     redraw!
 endfunction
-
-function! g:Fuzzy(files, args)
-    if v:version >= 900 && !empty(a:args)
-        return matchfuzzy(a:files, a:args)
-    else
-        return copy(a:files)->filter('v:val =~ a:args')
-    endif
-endfunction
-
-function! g:RecentFiles(a,...)
-    function! s:unique(list)
-        let visited = {}
-        let ret = []
-        for l in a:list
-            if !empty(l) && !has_key(visited, l)
-                call add(ret, l)
-                let visited[l] = 1
-            endif
-        endfor
-        return ret
-    endfunction
-
-    let l:files = s:unique(map(
-                \   filter(copy(g:recent_files), "filereadable(fnamemodify(v:val, ':p'))")
-                \   + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
-                \ 'fnamemodify(v:val, ":~:.")'))
-    return g:Fuzzy(l:files, a:a)
-endfunction
-
-function! g:AllFiles(a,...)
-    let l:files = systemlist("find . -type f 2>&1 | grep -v 'Permission denied'")
-    return g:Fuzzy(l:files, a:a)
-endfunction
-
-function! g:GitFiles(a,...)
-    let l:files = systemlist("git ls-tree --name-only -r HEAD")
-    return g:Fuzzy(l:files, a:a)
-endfunction
 " end functions
 
 " commands
 command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
 
-command -nargs=1 -complete=customlist,RecentFiles RecentFiles edit <args>
-command -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
-command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
+command -nargs=1 -complete=customlist,s:RecentFiles RecentFiles edit <args>
+command -nargs=1 -complete=customlist,s:AllFiles AllFiles edit <args>
+command -nargs=1 -complete=customlist,s:GitFiles GitFiles edit <args>
 " end commands
 
 " autocmds
 augroup vimrc
     autocmd!
     " set colors in diffmode
-    autocmd DiffUpdated * call g:DiffColors()
+    function! s:DiffColors()
+        hi DiffAdd          ctermbg=72   ctermfg=238  cterm=NONE        guibg=#5bb899 guifg=#3c4855 gui=NONE
+        hi DiffDelete       ctermbg=167  ctermfg=238  cterm=NONE        guibg=#db6c6c guifg=#3c4855 gui=NONE
+        hi DiffChange       ctermbg=238  ctermfg=178  cterm=UNDERLINE   guibg=#3c4855 guifg=#d5bc02 gui=UNDERLINE
+        hi DiffText         ctermbg=178  ctermfg=238  cterm=NONE        guibg=#d5bc02 guifg=#3c4855 gui=NONE
+        hi link diffBDiffer        WarningMsg
+        hi link diffCommon         WarningMsg
+        hi link diffDiffer         WarningMsg
+        hi link diffIdentical      WarningMsg
+        hi link diffIsA            WarningMsg
+        hi link diffNoEOL          WarningMsg
+        hi link diffOnly           WarningMsg
+        hi link diffRemoved        WarningMsg
+        hi link diffAdded          String
+    endfunction
+
+    autocmd DiffUpdated * call s:DiffColors()
 
     " close quickfix window when it is the only window
     autocmd WinEnter * if &l:buftype ==# 'quickfix' && winnr('$') == 1 && has('timers')
