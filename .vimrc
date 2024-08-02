@@ -21,7 +21,13 @@ set wildmenu
 if v:version >= 900 | set wildoptions=pum | endif
 set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 
-set nobackup noswapfile undofile
+set nobackup noswapfile
+let $UNDO_DATA = $HOME . '/.vim/undo'
+if v:version >= 703
+    silent !mkdir -p $UNDO_DATA
+    set undofile undodir=$UNDO_DATA
+endif
+
 set updatetime=50 lazyredraw ttyfast
 set ttimeoutlen=50
 
