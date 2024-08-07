@@ -38,6 +38,10 @@ set grepformat=%f:%l:%m
 let &t_SI = "\<Esc>[6 q"
 let &t_EI = "\<Esc>[2 q"
 
+"theme
+colorscheme slate
+if v:version >= 900 | colorscheme habamax | endif
+
 " nice to have
 nnoremap k gk
 nnoremap j gj
@@ -52,23 +56,20 @@ nnoremap N Nzzzv
 vnoremap <silent> > >gv
 vnoremap <silent> < <gv
 vnoremap $ $h
-nnoremap Q <nop>
-nnoremap gQ <nop>
-nnoremap <F1> <esc>
+nnoremap <silent> <C-t> :tabnew<CR>
 nnoremap ]w <C-w>w
 nnoremap [w <C-w>W
+nnoremap ]t gt
+nnoremap [t gT
+nnoremap ]q :cn<CR>
+nnoremap [q :cp<CR>
+nnoremap ]f :next<CR>
+nnoremap [f :previous<CR>
 " splits
 nnoremap <silent> <C-Up> :resize +5<cr>
 nnoremap <silent> <C-Down> :resize -5<cr>
 nnoremap <silent> <C-Right> :vertical resize -5<cr>
 nnoremap <silent> <C-Left> :vertical resize +5<cr>
-" tabs
-nnoremap <silent> <C-t> :tabnew<CR>
-nnoremap <C-l> gt
-nnoremap <C-h> gT
-" qf
-nnoremap <C-k> :cn<CR>
-nnoremap <C-j> :cp<CR>
 " completion
 inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
@@ -77,6 +78,10 @@ nnoremap ,n :set relativenumber!<CR>
 nnoremap ,w :set wrap!<CR>
 nnoremap ,p :set paste!<CR>
 nnoremap <expr> ,d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
+" nope
+nnoremap Q <nop>
+nnoremap gQ <nop>
+nnoremap <F1> <esc>
 
 " leader keys
 let mapleader = ' '
@@ -92,10 +97,6 @@ nnoremap <leader>sg :call QFGrep(1)<CR>
 nnoremap <leader>sG :call QFGrep(0)<CR>
 nnoremap <leader><leader> :b *
 
-"theme
-colorscheme slate
-if v:version >= 900 | colorscheme habamax | endif
-
 " functions
 function! s:Fuzzy(files, args)
     if v:version >= 900 && !empty(a:args)
@@ -105,6 +106,7 @@ function! s:Fuzzy(files, args)
     endif
 endfunction
 
+let g:recent_files_max_entries = 30
 function! s:RecentFiles(a,...)
     function! s:unique(list)
         let visited = {}
@@ -122,6 +124,10 @@ function! s:RecentFiles(a,...)
                 \  filter(copy(g:recent_files), "filereadable(fnamemodify(v:val, ':p'))")
                 \  + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
                 \ 'fnamemodify(v:val, ":~:.")'))
+
+    if len(l:files) > g:recent_files_max_entries
+        call remove(l:files, g:recent_files_max_entries, -1)
+    endif
     return s:Fuzzy(l:files, a:a)
 endfunction
 
@@ -213,7 +219,9 @@ augroup mru
         call insert(g:recent_files, fname, 0)
     endfunction
 
-    autocmd BufRead,BufWritePost,BufEnter * call s:AddRecentFile(expand('<abuf>'))
+    autocmd BufRead * call s:AddRecentFile(expand('<abuf>'))
+    autocmd BufWritePost * call s:AddRecentFile(expand('<abuf>'))
+    autocmd BufEnter * call s:AddRecentFile(expand('<abuf>'))
 augroup END
 " end autocmds
 
@@ -231,10 +239,8 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     Plug 'yegappan/lsp'
     Plug 'girishji/devdocs.vim'
     Plug 'girishji/autosuggest.vim'
-    Plug 'girishji/vimcomplete'
-    " colors
-    Plug 'joshdick/onedark.vim'
     Plug 'sheerun/vim-polyglot'
+    Plug 'joshdick/onedark.vim'
     call plug#end()
 
     silent! colorscheme onedark
