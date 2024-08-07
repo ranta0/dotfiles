@@ -1,44 +1,42 @@
+if !has('vim9script') || v:version < 900 | finish | endif
+vim9script
+
+g:mapleader = "\<Space>"
+g:maplocalleader = "\<Space>"
+
+# cursor modes
+&t_SI = "\<Esc>[6 q"
+&t_EI = "\<Esc>[2 q"
+
 filetype plugin indent on
 syntax enable
 
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos
 set fileencodings=utf-8,latin
-set termguicolors
-
 set number relativenumber nowrap
 set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent
 set scrolloff=8
 set nohidden autoread
-
 set list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 set hlsearch incsearch
-
 set showcmd noruler laststatus=2
 set statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
-
 set path=.,,
-set wildmenu
-if v:version >= 900 | set wildoptions=pum | endif
+set wildmenu wildoptions=pum
 set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
+set updatetime=50 lazyredraw ttyfast ttimeoutlen=50
 
-set nobackup noswapfile
-let $UNDO_DATA = $HOME . '/.vim/undo'
-if v:version >= 703
-    silent !mkdir -p $UNDO_DATA
-    set undofile undodir=$UNDO_DATA
-endif
-
-set updatetime=50 lazyredraw ttyfast
-set ttimeoutlen=50
+&undodir = $'{fnamemodify($MYVIMRC, ":p:h")}/.vim/undo//'
+if !isdirectory(&undodir) | mkdir(&undodir, "p") | endif
+set undofile nobackup noswapfile
 
 set grepprg=grep\ -rnH\ --exclude-dir={.git,node_modules,vendor}
 set grepformat=%f:%l:%m
 
-" cursor modes
-let &t_SI = "\<Esc>[6 q"
-let &t_EI = "\<Esc>[2 q"
+set background=dark
+set termguicolors
+colorscheme habamax
 
-" nice to have
 nnoremap k gk
 nnoremap j gj
 vnoremap k gk
@@ -52,177 +50,142 @@ nnoremap N Nzzzv
 vnoremap <silent> > >gv
 vnoremap <silent> < <gv
 vnoremap $ $h
-nnoremap Q <nop>
-nnoremap gQ <nop>
-nnoremap <F1> <esc>
+nnoremap <silent> <C-t> :tabnew<CR>
 nnoremap ]w <C-w>w
 nnoremap [w <C-w>W
-" splits
+nnoremap ]t gt
+nnoremap [t gT
+nnoremap ]q :cn<CR>
+nnoremap [q :cp<CR>
+nnoremap ]f :next<CR>
+nnoremap [f :previous<CR>
+# splits
 nnoremap <silent> <C-Up> :resize +5<cr>
 nnoremap <silent> <C-Down> :resize -5<cr>
 nnoremap <silent> <C-Right> :vertical resize -5<cr>
 nnoremap <silent> <C-Left> :vertical resize +5<cr>
-" tabs
-nnoremap <silent> <C-t> :tabnew<CR>
-nnoremap <C-l> gt
-nnoremap <C-h> gT
-" qf
-nnoremap <C-k> :cn<CR>
-nnoremap <C-j> :cp<CR>
-" completion
+# completion
 inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-" toggles
+# toggles
 nnoremap ,n :set relativenumber!<CR>
 nnoremap ,w :set wrap!<CR>
 nnoremap ,p :set paste!<CR>
-nnoremap <expr> ,d ":\<C-u>".(&diff?"diffoff":"diffthis")."\<CR>"
+nnoremap <expr> ,d ":" .. (&diff ? "diffoff" : "diffthis") .. "<CR>"
+# nope
+nnoremap Q <nop>
+nnoremap gQ <nop>
+nnoremap <F1> <esc>
 
-" leader keys
-let mapleader = ' '
+# leader keys
 nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sf :GitFiles <space>
 nnoremap <leader>sh :AllFiles <space>
 nnoremap <leader>? :RecentFiles <space>
 nnoremap <leader>- :Ex<CR>
-vnoremap <leader>T :s/\s\+$//e<LEFT><CR>
 xnoremap <leader>y "+y
-nnoremap <leader>f :call RangerExplorer()<CR>
-nnoremap <leader>sg :call QFGrep(1)<CR>
-nnoremap <leader>sG :call QFGrep(0)<CR>
+nnoremap <leader>p "+p
+nnoremap <leader>f <scriptcmd>RangerExplorer()<CR>
+nnoremap <leader>sg <scriptcmd>QFGrep(1)<CR>
+nnoremap <leader>sG <scriptcmd>QFGrep(0)<CR>
 nnoremap <leader><leader> :b *
 
-"theme
-colorscheme slate
-if v:version >= 900 | colorscheme habamax | endif
+# functions
+def Fuzzy(files: list<any>, search: string): list<any>
+    if empty(search) | return files | endif
+    return matchfuzzy(files, search)
+enddef
+def MRUFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
+    return Fuzzy(RecentFiles(), ArgLead)
+enddef
+def AllFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
+    return Fuzzy(systemlist("find . -type f 2>&1 | grep -v 'Permission denied'"), ArgLead)
+enddef
+def GitFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
+    return Fuzzy(systemlist("git ls-tree --name-only -r HEAD"), ArgLead)
+enddef
 
-" functions
-function! s:Fuzzy(files, args)
-    if v:version >= 900 && !empty(a:args)
-        return matchfuzzy(a:files, a:args)
-    else
-        return copy(a:files)->filter('v:val =~ a:args')
+def QFGrep(ignore_case: bool)
+    var search_pattern = input('Grep > ')
+    var cmd = 'silent grep! ' .. search_pattern
+    if ignore_case
+        cmd = cmd .. ' --ignore-case'
     endif
-endfunction
-
-function! s:RecentFiles(a,...)
-    function! s:unique(list)
-        let visited = {}
-        let ret = []
-        for l in a:list
-            if !empty(l) && !has_key(visited, l)
-                call add(ret, l)
-                let visited[l] = 1
-            endif
-        endfor
-        return ret
-    endfunction
-
-    let l:files = s:unique(map(
-                \  filter(copy(g:recent_files), "filereadable(fnamemodify(v:val, ':p'))")
-                \  + filter(copy(v:oldfiles), "filereadable(fnamemodify(v:val, ':p'))"),
-                \ 'fnamemodify(v:val, ":~:.")'))
-    return s:Fuzzy(l:files, a:a)
-endfunction
-
-function! s:AllFiles(a,...)
-    let l:files = systemlist("find . -type f 2>&1 | grep -v 'Permission denied'")
-    return s:Fuzzy(l:files, a:a)
-endfunction
-
-function! s:GitFiles(a,...)
-    let l:files = systemlist("git ls-tree --name-only -r HEAD")
-    return s:Fuzzy(l:files, a:a)
-endfunction
-
-function! g:QFGrep(ignore_case)
-    let l:search_pattern = input('Grep > ')
-    let l:cmd = 'silent grep! '.l:search_pattern
-    if a:ignore_case
-        let l:cmd = l:cmd . ' --ignore-case'
-    endif
-    if !empty(l:search_pattern)
-        execute l:cmd
+    if !empty(search_pattern)
+        execute cmd
         redraw!
         copen
     endif
-endfunction
+enddef
 
-function! g:RangerExplorer()
-    let tmpfile = tempname()
-    let l:cmd = 'silent !ranger --cmd "set show_hidden=true" --choosefile=' . tmpfile . ' ' . shellescape(expand('%:p:h'))
-    execute l:cmd
+def RangerExplorer()
+    var tmpfile = tempname()
+    var cmd = 'silent !ranger --cmd "set show_hidden=true" --choosefile=' .. tmpfile .. ' ' .. shellescape(expand('%:p:h'))
+    execute cmd
 
     if filereadable(tmpfile)
-        let filepath = readfile(tmpfile)[0]
-        execute 'edit ' . fnameescape(filepath)
-        call delete(tmpfile)
+        var filepath = readfile(tmpfile)[0]
+        execute 'edit ' .. fnameescape(filepath)
+        delete(tmpfile)
     else
         echohl ErrorMsg | echo 'No file chosen or ranger command failed' | echohl None
     endif
     redraw!
-endfunction
-" end functions
+enddef
+#  end functions
 
-" commands
-command! Scratch if bufexists('scratch') | buffer scratch | else
+#  commands
+command Scratch if bufexists('scratch') | buffer scratch | else
             \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
 
-command -nargs=1 -complete=customlist,s:RecentFiles RecentFiles edit <args>
-command -nargs=1 -complete=customlist,s:AllFiles AllFiles edit <args>
-command -nargs=1 -complete=customlist,s:GitFiles GitFiles edit <args>
-" end commands
+command -nargs=1 -complete=customlist,MRUFiles RecentFiles edit <args>
+command -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
+command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
+#  end commands
 
-" autocmds
-augroup vimrc
-    autocmd!
-    " set colors in diffmode
-    function! s:DiffColors()
-        hi DiffAdd          ctermbg=72   ctermfg=238  cterm=NONE        guibg=#5bb899 guifg=#3c4855 gui=NONE
-        hi DiffDelete       ctermbg=167  ctermfg=238  cterm=NONE        guibg=#db6c6c guifg=#3c4855 gui=NONE
-        hi DiffChange       ctermbg=238  ctermfg=178  cterm=UNDERLINE   guibg=#3c4855 guifg=#d5bc02 gui=UNDERLINE
-        hi DiffText         ctermbg=178  ctermfg=238  cterm=NONE        guibg=#d5bc02 guifg=#3c4855 gui=NONE
-        hi link diffBDiffer        WarningMsg
-        hi link diffCommon         WarningMsg
-        hi link diffDiffer         WarningMsg
-        hi link diffIdentical      WarningMsg
-        hi link diffIsA            WarningMsg
-        hi link diffNoEOL          WarningMsg
-        hi link diffOnly           WarningMsg
-        hi link diffRemoved        WarningMsg
-        hi link diffAdded          String
-    endfunction
+# mru
+g:recent_files = []
+g:recent_files_max_entries = 30
+def RecentFiles(): list<any>
+    def Unique(list: list<any>): list<any>
+        var visited = {}
+        var ret = []
+        for l in list
+            if !empty(l) && !has_key(visited, l)
+                ret->add(l)
+                visited[l] = 1
+            endif
+        endfor
+        return ret
+    enddef
 
-    autocmd DiffUpdated * call s:DiffColors()
+    var files = g:recent_files->filter("filereadable(fnamemodify(v:val, ':p'))")
+        + v:oldfiles->copy()->filter("filereadable(fnamemodify(v:val, ':p'))")
+    files->map('fnamemodify(v:val, ":~:.")')
+    files = Unique(files)
 
-    " close quickfix window when it is the only window
-    autocmd WinEnter * if &l:buftype ==# 'quickfix' && winnr('$') == 1 && has('timers')
-                \ | call timer_start(0, {-> execute('quit') }) | endif
+    if files->len() > g:recent_files_max_entries
+        files->remove(g:recent_files_max_entries, -1)
+    endif
+    return files
+enddef
+
+augroup mru | autocmd!
+    def AddRecentFile(bufnr: string)
+        if !empty(&buftype) | return | endif
+        var fname = bufname(eval(bufnr))->fnamemodify(':p')
+        g:recent_files->filter((_, v) => v !~ fname)
+        g:recent_files->insert(fname)
+    enddef
+
+    autocmd BufRead,BufWritePost,BufEnter * call AddRecentFile(expand('<abuf>'))
 augroup END
+# end mru
 
-let g:recent_files = []
-augroup mru
-    autocmd!
-
-    function! s:AddRecentFile(bufnr)
-        if !empty(&buftype)
-            return
-        endif
-        let fname = fnamemodify(bufname(a:bufnr + 0), ':p')
-        call filter(g:recent_files, 'v:val !=# fname')
-        call insert(g:recent_files, fname, 0)
-    endfunction
-
-    autocmd BufRead,BufWritePost,BufEnter * call s:AddRecentFile(expand('<abuf>'))
-augroup END
-" end autocmds
-
-" Install plug like this
-" curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+# Install plug like this
+# curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 if filereadable(expand('~/.vim/autoload/plug.vim'))
-    " it works on nvim as well adding this line
-    " silent! exec 'source ~/.vim/autoload/plug.vim'
-    call plug#begin()
+    plug#begin()
     Plug 'tpope/vim-fugitive'
     Plug 'airblade/vim-gitgutter'
     Plug 'tpope/vim-commentary'
@@ -231,75 +194,74 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     Plug 'yegappan/lsp'
     Plug 'girishji/devdocs.vim'
     Plug 'girishji/autosuggest.vim'
-    Plug 'girishji/vimcomplete'
-    " colors
-    Plug 'joshdick/onedark.vim'
+    Plug 'markonm/traces.vim'
     Plug 'sheerun/vim-polyglot'
-    call plug#end()
+    Plug 'joshdick/onedark.vim'
+    plug#end()
 
     silent! colorscheme onedark
-    " git
+
     nnoremap <leader>gs :Git<CR>
     nmap ]h <Plug>(GitGutterNextHunk)
     nmap [h <Plug>(GitGutterPrevHunk)
 
-    let lspOpts = #{
-                \   autoHighlightDiags: v:true,
-                \   ignoreMissingServer: v:true,
-                \   useQuickfixForLocations: v:true,
-                \   aleSupport: v:true,
-                \ }
+    g:lspOpts = {
+        autoHighlightDiags: true,
+        ignoreMissingServer: true,
+        useQuickfixForLocations: true,
+        aleSupport: true,
+    }
 
-    let lspServers = [
-                \ #{
-                \     name: 'golang',
-                \     filetype: ['go', 'gomod'],
-                \     path: '/usr/local/bin/gopls',
-                \     args: ['serve'],
-                \     syncInit: v:true,
-                \     initializationOptions: #{
-                \         semanticTokens: v:true,
-                \     },
-                \ },
-                \ #{
-                \     name: 'tsserver',
-                \     filetype: ['javascript', 'typescript'],
-                \     path: '/usr/local/bin/typescript-language-server',
-                \     args: ['--stdio'],
-                \ },
-                \ #{
-                \     name: 'vue-ls',
-                \     filetype: ['vue'],
-                \     path: '/usr/local/bin/vue-language-server',
-                \     args: ['--stdio'],
-                \     initializationOptions: #{
-                \         typescript: #{
-                \             tsdk: '/usr/local/bin/typescript-lib'
-                \         },
-                \         vue: #{
-                \             hybridMode: v:false
-                \         }
-                \     },
-                \ },
-                \ #{
-                \     name: 'rustlang',
-                \     filetype: ['rust'],
-                \     path: '/usr/local/bin/rust-analyzer',
-                \     args: [],
-                \     syncInit: v:true,
-                \ },
-                \ #{
-                \     name: 'intelephense',
-                \     filetype: ['php'],
-                \     path: '/usr/local/bin/intelephense',
-                \     args: ['--stdio']
-                \ },
-                \ ]
+    g:lspServers = [
+        {
+            name: 'golang',
+            filetype: ['go', 'gomod'],
+            path: '/usr/local/bin/gopls',
+            args: ['serve'],
+            syncInit: true,
+            initializationOptions: {
+            semanticTokens: true,
+            },
+        },
+        {
+            name: 'tsserver',
+            filetype: ['javascript', 'typescript'],
+            path: '/usr/local/bin/typescript-language-server',
+            args: ['--stdio'],
+        },
+        {
+            name: 'vue-ls',
+            filetype: ['vue'],
+            path: '/usr/local/bin/vue-language-server',
+            args: ['--stdio'],
+            initializationOptions: {
+            typescript: {
+            tsdk: '/usr/local/bin/typescript-lib'
+            },
+            vue: {
+            hybridMode: false
+            }
+            },
+        },
+        {
+            name: 'rustlang',
+            filetype: ['rust'],
+            path: '/usr/local/bin/rust-analyzer',
+            args: [],
+            syncInit: true,
+        },
+        {
+            name: 'intelephense',
+            filetype: ['php'],
+            path: '/usr/local/bin/intelephense',
+            args: ['--stdio']
+        },
+    ]
 
     augroup Lsp
         au!
-        autocmd User LspSetup call LspOptionsSet(lspOpts)
-        autocmd User LspSetup call LspAddServer(lspServers)
+        autocmd User LspSetup call LspOptionsSet(g:lspOpts)
+        autocmd User LspSetup call LspAddServer(g:lspServers)
         autocmd User LspAttached {
             setlocal signcolumn=yes
             setlocal tagfunc=lsp#lsp#TagFunc
@@ -322,36 +284,37 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     augroup END
 
     nmap <leader>td :ALEPopulateQuickfix<CR>:copen<CR>
-    let g:ale_sign_error = 'E '
-    let g:ale_sign_warning = 'W '
-    let g:ale_sign_info = 'I '
+    g:ale_sign_error = 'E '
+    g:ale_sign_warning = 'W '
+    g:ale_sign_info = 'I '
 
-    let g:ale_linters_explicit = 1
-    let g:ale_linters = {
-                \   'php': ['phpstan'],
-                \   'typescript': ['eslint'],
-                \   'javascript': ['eslint'],
-                \   'vue': ['eslint'],
-                \   'vim': ['vint'],
-                \}
+    g:ale_linters_explicit = 1
+    g:ale_linters = {
+        'php': ['phpstan'],
+        'typescript': ['eslint'],
+        'javascript': ['eslint'],
+        'vue': ['eslint'],
+        'vim': ['vint'],
+    }
 
-    let g:ale_fix_on_save = 1
-    let g:ale_fixers = {
-                \   '*': ['remove_trailing_lines', 'trim_whitespace'],
-                \   'javascript': ['prettier'],
-                \   'typescript': ['prettier'],
-                \   'vue': ['prettier'],
-                \   'svelte': ['prettier'],
-                \   'css': ['prettier'],
-                \   'html': ['prettier'],
-                \   'json': ['prettier'],
-                \   'yaml': ['prettier'],
-                \   'markdown': ['prettier'],
-                \   'lua': ['stylua'],
-                \   'sh': ['shfmt'],
-                \   'go': ['gofmt'],
-                \}
+    g:ale_fix_on_save = 1
+    g:ale_fixers = {
+        '*': ['remove_trailing_lines', 'trim_whitespace'],
+        'javascript': ['prettier'],
+        'typescript': ['prettier'],
+        'vue': ['prettier'],
+        'svelte': ['prettier'],
+        'css': ['prettier'],
+        'html': ['prettier'],
+        'json': ['prettier'],
+        'yaml': ['prettier'],
+        'markdown': ['prettier'],
+        'lua': ['stylua'],
+        'sh': ['shfmt'],
+        'go': ['gofmt'],
+    }
 
-    " commentstrings
+    # commentstring
     autocmd FileType php setlocal commentstring=//\ %s
+    autocmd FileType vim setlocal commentstring=#\ %s
 endif

@@ -30,6 +30,7 @@ RUN apt-get update \
   zoxide \
   ranger \
   highlight \
+  htop \
   make \
   clang \
   libtool-bin \
@@ -53,9 +54,9 @@ RUN passwd -d $USERNAME \
   && usermod -aG sudo $USERNAME
 
 # Install vim
-RUN git clone https://github.com/vim/vim.git $WORD_DIR/vim \
-  && cd $WORD_DIR/vim/src \
-  && sudo make install
+RUN git clone https://github.com/vim/vim.git $WORK_DIR/vim \
+  && cd $WORK_DIR/vim/src \
+  && make install
 
 ARG PHP_VERSION=8.3
 RUN /bin/sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list' \
@@ -103,14 +104,15 @@ ARG GLOW_VERSION=1.5.1
 RUN curl -sLO "https://github.com/charmbracelet/glow/releases/download/v${GLOW_VERSION}/glow_${GLOW_VERSION}_amd64.deb" \
   && dpkg -i "./glow_${GLOW_VERSION}_amd64.deb"
 
-RUN rm -rf /tmp/\* /var/tmp/*
+RUN rm -rf /tmp/\* /var/tmp/* \
+  && rm -rf $WORK_DIR/*.deb $WORK_DIR/*.tar.gz
 
 USER $USERNAME
 WORKDIR /home/$USERNAME
 ENV TERM xterm-256color
 
-ENV NVM_DIR=/home/$USERNAME/.nvm
-ENV NODE_VERSION=20.15.1
+ARG NVM_DIR=/home/$USERNAME/.nvm
+ARG NODE_VERSION=20.15.1
 ARG NVM_VERSION=0.39.7
 # Install nvm with node and npm
 RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
@@ -162,7 +164,8 @@ RUN git clone $DOTFILES ~/dotfiles \
   && ln -s ~/dotfiles/.bash_aliases ~/.bash_aliases \
   && ln -s ~/dotfiles/.vimrc ~/.vimrc \
   && ln -s ~/dotfiles/.gitconfig ~/.gitconfig \
-  && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf
+  && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf \
+  && ln -s ~/dotfiles/plug.lock ~/plug.lock
 
 ARG NVIM_CONFIG=https://github.com/ranta0/nvim
 RUN mkdir -p .config/nvim \
