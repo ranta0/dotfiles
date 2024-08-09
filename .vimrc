@@ -37,8 +37,6 @@ set background=dark
 set termguicolors
 colorscheme habamax
 
-# nice to have
-nnoremap : :vim9<space>
 nnoremap k gk
 nnoremap j gj
 vnoremap k gk
@@ -186,6 +184,11 @@ augroup mru
 augroup END
 # end mru
 
+augroup cmd
+    autocmd!
+    autocmd CmdlineEnter : if visualmode() == null_string | setcmdline('vim9 ') | else | setcmdline('vim9 :') | visualmode(1) | endif
+augroup END
+
 # Install plug like this
 # curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 if filereadable(expand('~/.vim/autoload/plug.vim'))
@@ -196,7 +199,6 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     Plug 'tpope/vim-sleuth'
     Plug 'dense-analysis/ale'
     Plug 'yegappan/lsp'
-    Plug 'girishji/scope.vim'
     Plug 'girishji/devdocs.vim'
     Plug 'girishji/autosuggest.vim'
     Plug 'sheerun/vim-polyglot'
@@ -205,33 +207,6 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
 
     silent! colorscheme onedark
 
-    # fuzzy
-    import autoload 'scope/popup.vim' as sp
-    import autoload 'scope/util.vim' as ut
-    def MRUScope()
-        var mru = RecentFiles()
-        mru->map((_, v) => {
-            return {text: v}
-        })
-        var menu: sp.FilterMenu
-        menu = sp.FilterMenu.new("MRU", mru,
-            (res, key) => {
-                ut.VisitFile(key, res.text)
-            },
-            (winid, _) => {
-                win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
-                hi def link ScopeMenuSubtle Comment
-                hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
-            })
-    enddef
-
-    nnoremap <leader>sf :Scope GitFile<cr>
-    nnoremap <leader>sh :Scope File<cr>
-    nnoremap <leader><leader> :Scope Buffer<cr>
-    nnoremap <leader>sc :Scope Colorscheme<cr>
-    nnoremap <leader>? <scriptcmd>MRUScope()<cr>
-
-    #  git
     nnoremap <leader>gs :Git<CR>
     nmap ]h <Plug>(GitGutterNextHunk)
     nmap [h <Plug>(GitGutterPrevHunk)
