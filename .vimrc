@@ -206,18 +206,17 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     silent! colorscheme onedark
 
     # fuzzy
-    import autoload 'scope/fuzzy.vim'
-    import autoload 'scope/popup.vim'
-    import autoload 'scope/util.vim'
+    import autoload 'scope/popup.vim' as sp
+    import autoload 'scope/util.vim' as ut
     def MRUScope()
         var mru = RecentFiles()
         mru->map((_, v) => {
             return {text: v}
         })
-        var menu: popup.FilterMenu
-        menu = popup.FilterMenu.new("MRU", mru,
+        var menu: sp.FilterMenu
+        menu = sp.FilterMenu.new("MRU", mru,
             (res, key) => {
-                util.VisitFile(key, res.text)
+                ut.VisitFile(key, res.text)
             },
             (winid, _) => {
                 win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
@@ -226,11 +225,11 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
             })
     enddef
 
-    nnoremap <leader>sf <scriptcmd>fuzzy.GitFile()<cr>
-    nnoremap <leader>sh <scriptcmd>fuzzy.File()<cr>
+    nnoremap <leader>sf :Scope GitFile<cr>
+    nnoremap <leader>sh :Scope File<cr>
+    nnoremap <leader><leader> :Scope Buffer<cr>
+    nnoremap <leader>sc :Scope Colorscheme<cr>
     nnoremap <leader>? <scriptcmd>MRUScope()<cr>
-    nnoremap <leader><leader> <scriptcmd>fuzzy.Buffer()<cr>
-    nnoremap <leader>sc <scriptcmd>fuzzy.Colorscheme()<cr>
 
     #  git
     nnoremap <leader>gs :Git<CR>
