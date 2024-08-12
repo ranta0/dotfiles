@@ -159,7 +159,7 @@ def RecentFiles(): list<any>
         return ret
     enddef
 
-    var files = g:recent_files->filter("filereadable(fnamemodify(v:val, ':p'))")
+    var files = g:recent_files->copy()->filter("filereadable(fnamemodify(v:val, ':p'))")
         + v:oldfiles->copy()->filter("filereadable(fnamemodify(v:val, ':p'))")
     files->map('fnamemodify(v:val, ":~:.")')
     files = Unique(files)
@@ -194,12 +194,57 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     Plug 'yegappan/lsp'
     Plug 'girishji/devdocs.vim'
     Plug 'girishji/autosuggest.vim'
+    Plug 'girishji/scope.vim'
     Plug 'markonm/traces.vim'
     Plug 'sheerun/vim-polyglot'
     Plug 'joshdick/onedark.vim'
     plug#end()
 
     silent! colorscheme onedark
+
+    # use popup wrapper in scope.vim
+    if exists('g:plugs["scope.vim"]') && isdirectory($HOME .. '/.vim/plugged/scope.vim')
+        import autoload 'scope/popup.vim' as popup
+        import autoload 'scope/util.vim' as util
+
+        def PopupList(title: string, list: list<any>)
+            var menu: popup.FilterMenu
+            menu = popup.FilterMenu.new(title,
+                list->map((_, v) => {
+                    return {text: v}
+                }),
+                (res, key) => {
+                    util.VisitFile(key, res.text)
+                },
+                (winid, _) => {
+                    win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
+                    hi def link ScopeMenuSubtle Comment
+                    hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
+                })
+        enddef
+
+        export def PopupMRU()
+            PopupList("MRU", RecentFiles())
+        enddef
+        nnoremap <leader>? <scriptcmd>PopupMRU()<CR>
+
+        export def PopupGitFiles()
+            PopupList("Git Files", systemlist("git ls-tree --name-only -r HEAD"))
+        enddef
+        nnoremap <leader>sf <scriptcmd>PopupGitFiles()<CR>
+
+        export def PopupFiles()
+            PopupList("Files", systemlist("find . -type f 2>&1 | grep -v 'Permission denied'"))
+        enddef
+        nnoremap <leader>sh <scriptcmd>PopupFiles()<CR>
+
+        export def PopupBuffers()
+            var buffers = g:recent_files->copy()->filter("filereadable(fnamemodify(v:val, ':p'))")
+            buffers->map('fnamemodify(v:val, ":~:.")')
+            PopupList("Buffers", buffers)
+        enddef
+        nnoremap <leader><leader> <scriptcmd>PopupBuffers()<CR>
+    endif
 
     nnoremap <leader>gs :Git<CR>
     nmap ]h <Plug>(GitGutterNextHunk)
