@@ -96,13 +96,13 @@ def Fuzzy(files: list<any>, search: string): list<any>
     return matchfuzzy(files, search)
 enddef
 def MRUFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
-    return Fuzzy(RecentFiles(), ArgLead)
+    return Fuzzy(g:RecentFiles(), ArgLead)
 enddef
 def AllFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
-    return Fuzzy(systemlist("find . -type f 2>&1 | grep -v 'Permission denied'"), ArgLead)
+    return Fuzzy(systemlist("find . -type f 2>&1"), ArgLead)
 enddef
 def GitFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
-    return Fuzzy(systemlist("git ls-tree --name-only -r HEAD"), ArgLead)
+    return Fuzzy(systemlist("git ls-files"), ArgLead)
 enddef
 
 def QFGrep(ignore_case: bool)
@@ -146,7 +146,7 @@ command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 # mru
 g:recent_files = []
 g:recent_files_max_entries = 30
-def RecentFiles(): list<any>
+def g:RecentFiles(): list<any>
     def Unique(list: list<any>): list<any>
         var visited = {}
         var ret = []
@@ -194,7 +194,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     Plug 'yegappan/lsp'
     Plug 'girishji/devdocs.vim'
     Plug 'girishji/autosuggest.vim'
-    Plug 'girishji/scope.vim'
+    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
     Plug 'markonm/traces.vim'
     Plug 'sheerun/vim-polyglot'
     Plug 'joshdick/onedark.vim'
@@ -202,51 +202,24 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
 
     silent! colorscheme onedark
 
-    # use popup wrapper in scope.vim
-    if exists('g:plugs["scope.vim"]') && isdirectory($HOME .. '/.vim/plugged/scope.vim')
-        import autoload 'scope/popup.vim' as popup
-        import autoload 'scope/util.vim' as util
+    # fuzzy finders
+    g:fzf_popup_option = '--ansi --bind tab:up,shift-tab:down'
+    nnoremap <leader>sf :call fzf#run({'source': 'git ls-files', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
+    nnoremap <leader>sh :call fzf#run({'source': 'find . -type f', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
+    nnoremap <leader>? :call fzf#run({'source': RecentFiles(), 'sink': 'e', 'options': g:fzf_popup_option})<CR>
+    nnoremap <leader><leader> :call fzf#run({'source': copy(g:recent_files), 'sink': 'e', 'options': g:fzf_popup_option})<CR>
 
-        def PopupList(title: string, list: list<any>)
-            var menu: popup.FilterMenu
-            menu = popup.FilterMenu.new(title,
-                list->map((_, v) => {
-                    return {text: v}
-                }),
-                (res, key) => {
-                    util.VisitFile(key, res.text)
-                },
-                (winid, _) => {
-                    win_execute(winid, "syn match ScopeMenuDirectorySubtle '^.*[\\/]'")
-                    hi def link ScopeMenuSubtle Comment
-                    hi def link ScopeMenuDirectorySubtle ScopeMenuSubtle
-                })
-        enddef
+    # git
+    def Go2LineGrep(selected: string)
+        var parts = split(selected, ':')
+        execute 'e' parts[0]
+        cursor(eval(parts[1]), eval(parts[2]))
+    enddef
+    g:fzf_git_grep = 'git grep --line-number --column --color -- '
+    command -nargs=* GGrep call fzf#run({'source': g:fzf_git_grep .. shellescape(<q-args>), 'sink': function('Go2LineGrep'), 'options': g:fzf_popup_option})
+    nnoremap <leader>gg :GGrep <space>
+    nnoremap <leader>gs :call fzf#run({'source': 'git diff --name-only', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
 
-        export def PopupMRU()
-            PopupList("MRU", RecentFiles())
-        enddef
-        nnoremap <leader>? <scriptcmd>PopupMRU()<CR>
-
-        export def PopupGitFiles()
-            PopupList("Git Files", systemlist("git ls-tree --name-only -r HEAD"))
-        enddef
-        nnoremap <leader>sf <scriptcmd>PopupGitFiles()<CR>
-
-        export def PopupFiles()
-            PopupList("Files", systemlist("find . -type f 2>&1 | grep -v 'Permission denied'"))
-        enddef
-        nnoremap <leader>sh <scriptcmd>PopupFiles()<CR>
-
-        export def PopupBuffers()
-            var buffers = g:recent_files->copy()->filter("filereadable(fnamemodify(v:val, ':p'))")
-            buffers->map('fnamemodify(v:val, ":~:.")')
-            PopupList("Buffers", buffers)
-        enddef
-        nnoremap <leader><leader> <scriptcmd>PopupBuffers()<CR>
-    endif
-
-    nnoremap <leader>gs :Git<CR>
     nmap ]h <Plug>(GitGutterNextHunk)
     nmap [h <Plug>(GitGutterPrevHunk)
 
