@@ -215,11 +215,17 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
         execute 'e' parts[0]
         cursor(eval(parts[1]), eval(parts[2]))
     enddef
+    def GitStatusEdit(selected: string)
+        var parts = split(selected, ' ')
+        execute 'e' parts[1]
+    enddef
     g:fzf_git_grep = 'git grep --line-number --column --color -- '
     command -nargs=* GGrep call fzf#run({'source': g:fzf_git_grep .. shellescape(<q-args>), 'sink': function('Go2LineGrep'), 'options': g:fzf_popup_option})
+    command GStatus call fzf#run({'source': 'git -c color.status=always status -s', 'sink': function('GitStatusEdit'), 'options': g:fzf_popup_option})
     nnoremap <leader>gg :GGrep <space>
-    nnoremap <leader>gs :call fzf#run({'source': 'git diff --name-only', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
+    nnoremap <leader>gs :GStatus <CR>
 
+    g:gitgutter_map_keys = 0
     nmap ]h <Plug>(GitGutterNextHunk)
     nmap [h <Plug>(GitGutterPrevHunk)
 
