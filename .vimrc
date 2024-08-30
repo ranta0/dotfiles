@@ -145,7 +145,6 @@ command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 
 # mru
 g:recent_files = []
-g:recent_files_max_entries = 30
 def g:RecentFiles(): list<any>
     def Unique(list: list<any>): list<any>
         var visited = {}
@@ -162,12 +161,7 @@ def g:RecentFiles(): list<any>
     var files = g:recent_files->copy()->filter("filereadable(fnamemodify(v:val, ':p'))")
         + v:oldfiles->copy()->filter("filereadable(fnamemodify(v:val, ':p'))")
     files->map('fnamemodify(v:val, ":~:.")')
-    files = Unique(files)
-
-    if files->len() > g:recent_files_max_entries
-        files->remove(g:recent_files_max_entries, -1)
-    endif
-    return files
+    return Unique(files)
 enddef
 
 augroup mru | autocmd!
@@ -206,7 +200,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     g:fzf_popup_option = '--ansi --bind tab:up,shift-tab:down'
     nnoremap <leader>sf :call fzf#run({'source': 'git ls-files', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
     nnoremap <leader>sh :call fzf#run({'source': 'find . -type f', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
-    nnoremap <leader>? :call fzf#run({'source': RecentFiles(), 'sink': 'e', 'options': g:fzf_popup_option})<CR>
+    nnoremap <leader>? :call fzf#run({'source': copy(RecentFiles()), 'sink': 'e', 'options': g:fzf_popup_option})<CR>
 
     # git
     def Go2LineGrep(selected: string)
