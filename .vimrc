@@ -207,7 +207,6 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     nnoremap <leader>sf :call fzf#run({'source': 'git ls-files', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
     nnoremap <leader>sh :call fzf#run({'source': 'find . -type f', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
     nnoremap <leader>? :call fzf#run({'source': RecentFiles(), 'sink': 'e', 'options': g:fzf_popup_option})<CR>
-    nnoremap <leader><leader> :call fzf#run({'source': copy(g:recent_files), 'sink': 'e', 'options': g:fzf_popup_option})<CR>
 
     # git
     def Go2LineGrep(selected: string)
@@ -217,7 +216,8 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     enddef
     def GitStatusEdit(selected: string)
         var parts = split(selected, ' ')
-        execute 'e' parts[1]
+        if parts[0] == 'D' | echohl ErrorMsg | echo 'This file has been deleted' | echohl None | return | endif
+        if parts[1] == '' | execute 'e' parts[2] | else | execute 'e' parts[1] | endif
     enddef
     g:fzf_git_grep = 'git grep --line-number --column --color -- '
     command -nargs=* GGrep call fzf#run({'source': g:fzf_git_grep .. shellescape(<q-args>), 'sink': function('Go2LineGrep'), 'options': g:fzf_popup_option})
