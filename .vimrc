@@ -35,7 +35,7 @@ set grepformat=%f:%l:%m
 
 set background=dark
 set termguicolors
-colorscheme habamax
+colorscheme lunaperche
 
 nnoremap k gk
 nnoremap j gj
@@ -197,10 +197,10 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     silent! colorscheme onedark
 
     # fuzzy finders
-    g:fzf_popup_option = '--ansi --bind tab:up,shift-tab:down'
+    g:fzf_popup_option = '-i --ansi --bind tab:up,shift-tab:down'
     nnoremap <leader>sf :call fzf#run({'source': 'git ls-files', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
     nnoremap <leader>sh :call fzf#run({'source': 'find . -type f', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
-    nnoremap <leader>? :call fzf#run({'source': copy(RecentFiles()), 'sink': 'e', 'options': g:fzf_popup_option})<CR>
+    nnoremap <leader>? :call fzf#run({'source': copy(RecentFiles()), 'sink': 'e', 'options': g:fzf_popup_option . ' --no-sort'})<CR>
 
     # git
     def Go2LineGrep(selected: string)
