@@ -86,8 +86,6 @@ nnoremap <leader>- :Ex<CR>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
 nnoremap <leader>f <scriptcmd>RangerExplorer()<CR>
-nnoremap <leader>sg <scriptcmd>QFGrep(1)<CR>
-nnoremap <leader>sG <scriptcmd>QFGrep(0)<CR>
 nnoremap <leader><leader> :b *
 
 # functions
@@ -103,19 +101,6 @@ def AllFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
 enddef
 def GitFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
     return Fuzzy(systemlist("git ls-files"), ArgLead)
-enddef
-
-def QFGrep(ignore_case: bool)
-    var search_pattern = input('Grep > ')
-    var cmd = 'silent grep! ' .. search_pattern
-    if ignore_case
-        cmd = cmd .. ' --ignore-case'
-    endif
-    if !empty(search_pattern)
-        execute cmd
-        redraw!
-        copen
-    endif
 enddef
 
 def RangerExplorer()
@@ -138,9 +123,12 @@ enddef
 command Scratch if bufexists('scratch') | buffer scratch | else
             \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
 
-command -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
-command -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
-command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
+command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
+command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
+command! -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
+
+command! -nargs=+ Grep cgetexpr system(&grepprg .. ' <args>') | copen
+command! -nargs=+ Grepi cgetexpr system(&grepprg .. ' --ignore-case <args>') | copen
 #  end commands
 
 # mru
@@ -151,9 +139,7 @@ def g:RecentFiles(): list<any>
     if filereadable(g:recent_files_file)
         g:recent_files = readfile(g:recent_files_file)
     endif
-
-    var files = copy(g:recent_files)
-    return files->map('fnamemodify(v:val, ":~:.")')
+    return copy(g:recent_files)->map('fnamemodify(v:val, ":~:.")')
 enddef
 
 augroup mru | autocmd!
@@ -215,7 +201,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
 
     command! MRUFiles call fzf#run(fzf#wrap({
                 \ 'source': g:RecentFiles(), 'sink': 'e',
-                \ 'options': g:fzf_popup_option .. ' --no-sort --header-lines ' .. (expand('%') == '' ? '0' : '1') .. ' --prompt "History> "'}))
+                \ 'options': g:fzf_popup_option .. ' --no-sort --header-lines ' .. (empty(expand('%')) ? '0' : '1') .. ' --prompt "History> "'}))
     nnoremap <leader>? :MRUFiles<CR>
 
     # git
@@ -225,7 +211,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
         cursor(eval(parts[1]), eval(parts[2]))
     enddef
     g:fzf_git_grep = 'git grep --line-number --column --color -- '
-    command -nargs=* GGrep call fzf#run(fzf#wrap({
+    command! -nargs=* GGrep call fzf#run(fzf#wrap({
                 \ 'source': g:fzf_git_grep .. shellescape(<q-args>), 'sink': function('Go2LineGrep'),
                 \ 'options': g:fzf_popup_option .. ' --prompt "GitGrep [' .. shellescape(<q-args>) .. ']> "'}))
     nnoremap <leader>gg :GGrep <space>
@@ -235,7 +221,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
         if parts[0] == 'D' | echohl ErrorMsg | echo 'This file has been deleted' | echohl None | return | endif
         if parts[1] == '' | execute 'e' parts[2] | else | execute 'e' parts[1] | endif
     enddef
-    command GStatus call fzf#run(fzf#wrap({
+    command! GStatus call fzf#run(fzf#wrap({
                 \ 'source': 'git -c color.status=always status -s', 'sink': function('GitStatusEdit'),
                 \ 'options': g:fzf_popup_option .. ' --prompt "GitStatus> "'}))
     nnoremap <leader>gs :GStatus <CR>
