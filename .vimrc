@@ -167,7 +167,7 @@ augroup mru | autocmd!
         var fname = bufname(eval(bufnr))->fnamemodify(':p')
         if !filereadable(fname) | return | endif
 
-        g:recent_files->filter((_, v) => v !~ fname)
+        g:recent_files->filter((_, v) => v !=# fname)
         g:recent_files->insert(fname)
 
         if g:recent_files->len() > g:recent_files_max_entries
@@ -215,7 +215,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
 
     command! MRUFiles call fzf#run(fzf#wrap({
                 \ 'source': g:RecentFiles(), 'sink': 'e',
-                \ 'options': g:fzf_popup_option .. ' --no-sort --prompt "History> "'}))
+                \ 'options': g:fzf_popup_option .. ' --no-sort --header-lines ' .. (expand('%') == '' ? '0' : '1') .. ' --prompt "History> "'}))
     nnoremap <leader>? :MRUFiles<CR>
 
     # git
@@ -240,7 +240,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
                 \ 'options': g:fzf_popup_option .. ' --prompt "GitStatus> "'}))
     nnoremap <leader>gs :GStatus <CR>
 
-    g:gitgutter_map_keys = 0
+    g:gitgutter_map_keys = 1
     g:gitgutter_show_msg_on_hunk_jumping = 1
     nmap ]h <Plug>(GitGutterNextHunk)
     nmap [h <Plug>(GitGutterPrevHunk)
