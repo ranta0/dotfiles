@@ -145,31 +145,36 @@ command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 
 # mru
 g:recent_files = []
+g:recent_files_max_entries = 100
+g:recent_files_file = $'{fnamemodify($MYVIMRC, ":p:h")}/.vim/mru'
 def g:RecentFiles(): list<any>
-    def Unique(list: list<any>): list<any>
-        var visited = {}
-        var ret = []
-        for l in list
-            if !empty(l) && !has_key(visited, l)
-                ret->add(l)
-                visited[l] = 1
-            endif
-        endfor
-        return ret
-    enddef
+    if filereadable(g:recent_files_file)
+        g:recent_files = readfile(g:recent_files_file)
+    endif
 
-    var files = g:recent_files->copy()->filter("filereadable(fnamemodify(v:val, ':p'))")
-        + v:oldfiles->copy()->filter("filereadable(fnamemodify(v:val, ':p'))")
-    files->map('fnamemodify(v:val, ":~:.")')
-    return Unique(files)
+    var files = copy(g:recent_files)
+    return files->map('fnamemodify(v:val, ":~:.")')
 enddef
 
 augroup mru | autocmd!
     def AddRecentFile(bufnr: string)
         if !empty(&buftype) | return | endif
+
+        if filereadable(g:recent_files_file)
+            g:recent_files = readfile(g:recent_files_file)
+        endif
+
         var fname = bufname(eval(bufnr))->fnamemodify(':p')
+        if !filereadable(fname) | return | endif
+
         g:recent_files->filter((_, v) => v !~ fname)
         g:recent_files->insert(fname)
+
+        if g:recent_files->len() > g:recent_files_max_entries
+            g:recent_files->remove(g:recent_files_max_entries, -1)
+        endif
+
+        g:recent_files->writefile(g:recent_files_file)
     enddef
 
     autocmd BufRead,BufWritePost,BufEnter * call AddRecentFile(expand('<abuf>'))
@@ -200,7 +205,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     g:fzf_popup_option = '-i --ansi --bind tab:up,shift-tab:down'
     nnoremap <leader>sf :call fzf#run({'source': 'git ls-files', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
     nnoremap <leader>sh :call fzf#run({'source': 'find . -type f', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
-    nnoremap <leader>? :call fzf#run({'source': copy(RecentFiles()), 'sink': 'e', 'options': g:fzf_popup_option . ' --no-sort'})<CR>
+    nnoremap <leader>? :call fzf#run({'source': RecentFiles(), 'sink': 'e', 'options': g:fzf_popup_option . ' --no-sort'})<CR>
 
     # git
     def Go2LineGrep(selected: string)
