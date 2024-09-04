@@ -81,7 +81,7 @@ nnoremap <F1> <esc>
 nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sf :GitFiles <space>
 nnoremap <leader>sh :AllFiles <space>
-nnoremap <leader>? :RecentFiles <space>
+nnoremap <leader>? :MRUFiles <space>
 nnoremap <leader>- :Ex<CR>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
@@ -138,7 +138,7 @@ enddef
 command Scratch if bufexists('scratch') | buffer scratch | else
             \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
 
-command -nargs=1 -complete=customlist,MRUFiles RecentFiles edit <args>
+command -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
 command -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
 command -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 #  end commands
@@ -201,11 +201,22 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
 
     silent! colorscheme onedark
 
-    # fuzzy finders
+    # fuzzy finders, override the default ones
     g:fzf_popup_option = '-i --ansi --bind tab:up,shift-tab:down'
-    nnoremap <leader>sf :call fzf#run({'source': 'git ls-files', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
-    nnoremap <leader>sh :call fzf#run({'source': 'find . -type f', 'sink': 'e', 'options': g:fzf_popup_option})<CR>
-    nnoremap <leader>? :call fzf#run({'source': RecentFiles(), 'sink': 'e', 'options': g:fzf_popup_option . ' --no-sort'})<CR>
+    command! GitFiles call fzf#run(fzf#wrap({
+                \ 'source': 'git ls-files', 'sink': 'e',
+                \ 'options': g:fzf_popup_option .. ' --prompt "GFiles> "'}))
+    nnoremap <leader>sf :GitFiles<CR>
+
+    command! AllFiles call fzf#run(fzf#wrap({
+                \ 'source': 'find . -type f', 'sink': 'e',
+                \ 'options': g:fzf_popup_option .. ' --prompt "Files> "'}))
+    nnoremap <leader>sh :AllFiles<CR>
+
+    command! MRUFiles call fzf#run(fzf#wrap({
+                \ 'source': g:RecentFiles(), 'sink': 'e',
+                \ 'options': g:fzf_popup_option .. ' --no-sort --prompt "History> "'}))
+    nnoremap <leader>? :MRUFiles<CR>
 
     # git
     def Go2LineGrep(selected: string)
@@ -213,18 +224,24 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
         execute 'e' parts[0]
         cursor(eval(parts[1]), eval(parts[2]))
     enddef
+    g:fzf_git_grep = 'git grep --line-number --column --color -- '
+    command -nargs=* GGrep call fzf#run(fzf#wrap({
+                \ 'source': g:fzf_git_grep .. shellescape(<q-args>), 'sink': function('Go2LineGrep'),
+                \ 'options': g:fzf_popup_option .. ' --prompt "GitGrep [' .. shellescape(<q-args>) .. ']> "'}))
+    nnoremap <leader>gg :GGrep <space>
+
     def GitStatusEdit(selected: string)
         var parts = split(selected, ' ')
         if parts[0] == 'D' | echohl ErrorMsg | echo 'This file has been deleted' | echohl None | return | endif
         if parts[1] == '' | execute 'e' parts[2] | else | execute 'e' parts[1] | endif
     enddef
-    g:fzf_git_grep = 'git grep --line-number --column --color -- '
-    command -nargs=* GGrep call fzf#run({'source': g:fzf_git_grep .. shellescape(<q-args>), 'sink': function('Go2LineGrep'), 'options': g:fzf_popup_option})
-    command GStatus call fzf#run({'source': 'git -c color.status=always status -s', 'sink': function('GitStatusEdit'), 'options': g:fzf_popup_option})
-    nnoremap <leader>gg :GGrep <space>
+    command GStatus call fzf#run(fzf#wrap({
+                \ 'source': 'git -c color.status=always status -s', 'sink': function('GitStatusEdit'),
+                \ 'options': g:fzf_popup_option .. ' --prompt "GitStatus> "'}))
     nnoremap <leader>gs :GStatus <CR>
 
     g:gitgutter_map_keys = 0
+    g:gitgutter_show_msg_on_hunk_jumping = 1
     nmap ]h <Plug>(GitGutterNextHunk)
     nmap [h <Plug>(GitGutterPrevHunk)
 
