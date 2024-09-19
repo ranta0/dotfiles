@@ -88,6 +88,11 @@ nnoremap <leader>p "+p
 nnoremap <leader>f <scriptcmd>RangerExplorer()<CR>
 nnoremap <leader><leader> :b *
 
+for ch in 'abcdefghijklmnopqrstuvwxyz'
+    exe 'nnoremap m' .. ch .. ' m' .. toupper(ch)
+    exe "nnoremap '" .. ch .. ' `' .. toupper(ch)
+endfor
+
 # functions
 def Fuzzy(files: list<any>, search: string): list<any>
     if empty(search) | return files | endif
@@ -120,7 +125,7 @@ enddef
 #  end functions
 
 #  commands
-command Scratch if bufexists('scratch') | buffer scratch | else
+command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
 
 command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
@@ -185,7 +190,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     Plug 'joshdick/onedark.vim'
     plug#end()
 
-    silent! colorscheme onedark
+    # silent! colorscheme onedark
 
     # fuzzy finders, override the default ones
     g:fzf_popup_option = '-i --ansi --bind tab:up,shift-tab:down'
@@ -246,7 +251,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
             args: ['serve'],
             syncInit: true,
             initializationOptions: {
-            semanticTokens: true,
+                semanticTokens: true,
             },
         },
         {
@@ -261,12 +266,12 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
             path: '/usr/local/bin/vue-language-server',
             args: ['--stdio'],
             initializationOptions: {
-            typescript: {
-            tsdk: '/usr/local/bin/typescript-lib'
-            },
-            vue: {
-            hybridMode: false
-            }
+                typescript: {
+                    tsdk: '/usr/local/bin/typescript-lib'
+                },
+                vue: {
+                    hybridMode: false
+                }
             },
         },
         {
