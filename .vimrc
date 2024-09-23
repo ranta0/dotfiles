@@ -11,19 +11,16 @@ g:maplocalleader = "\<Space>"
 filetype plugin indent on
 syntax enable
 
-set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos
-set fileencodings=utf-8,latin
+set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf-8,latin
 set number relativenumber nowrap
-set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent
-set scrolloff=8
+set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
 set nohidden autoread
 set list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 set hlsearch incsearch
-set showcmd noruler laststatus=2
+set showcmd noruler laststatus=2 shortmess-=S
 set statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 set path=.,,
-set wildmenu wildoptions=pum
-set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
+set wildmenu wildoptions=pum wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 set updatetime=50 lazyredraw ttyfast ttimeoutlen=50
 
 &undodir = $'{fnamemodify($MYVIMRC, ":p:h")}/.vim/undo//'
@@ -35,7 +32,7 @@ set grepformat=%f:%l:%m
 
 set background=dark
 set termguicolors
-colorscheme lunaperche
+colorscheme habamax
 
 nnoremap k gk
 nnoremap j gj
@@ -50,20 +47,8 @@ nnoremap N Nzzzv
 vnoremap <silent> > >gv
 vnoremap <silent> < <gv
 vnoremap $ $h
-nnoremap <silent> <C-t> :tabnew<CR>
-nnoremap ]w <C-w>w
-nnoremap [w <C-w>W
-nnoremap ]t gt
-nnoremap [t gT
 nnoremap ]q :cn<CR>
 nnoremap [q :cp<CR>
-nnoremap ]f :next<CR>
-nnoremap [f :previous<CR>
-# splits
-nnoremap <silent> <C-Up> :resize +5<cr>
-nnoremap <silent> <C-Down> :resize -5<cr>
-nnoremap <silent> <C-Right> :vertical resize -5<cr>
-nnoremap <silent> <C-Left> :vertical resize +5<cr>
 # completion
 inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
@@ -75,23 +60,22 @@ nnoremap <expr> ,d ":" .. (&diff ? "diffoff" : "diffthis") .. "<CR>"
 # nope
 nnoremap Q <nop>
 nnoremap gQ <nop>
-nnoremap <F1> <esc>
 
 # leader keys
 nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sf :GitFiles <space>
 nnoremap <leader>sh :AllFiles <space>
 nnoremap <leader>? :MRUFiles <space>
+nnoremap <leader><leader> :BufFiles <space>
 nnoremap <leader>- :Ex<CR>
 xnoremap <leader>y "+y
-nnoremap <leader>p "+p
 nnoremap <leader>f <scriptcmd>RangerExplorer()<CR>
-nnoremap <leader><leader> :b *
 
-for ch in 'abcdefghijklmnopqrstuvwxyz'
-    exe 'nnoremap m' .. ch .. ' m' .. toupper(ch)
-    exe "nnoremap '" .. ch .. ' `' .. toupper(ch)
+for ch in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    exe $'nnoremap <silent> m{tolower(ch)} m{ch}'
+    exe $"nnoremap <silent> '{tolower(ch)} `{ch}"
 endfor
+nnoremap <silent> <leader>dm :delmarks A-Z<CR>
 
 # functions
 def Fuzzy(files: list<any>, search: string): list<any>
@@ -99,13 +83,16 @@ def Fuzzy(files: list<any>, search: string): list<any>
     return matchfuzzy(files, search)
 enddef
 def MRUFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
-    return Fuzzy(g:RecentFiles(), ArgLead)
+    return Fuzzy(copy(v:oldfiles)->map('fnamemodify(v:val, ":~:.")'), ArgLead)
 enddef
 def AllFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
     return Fuzzy(systemlist("find . -type f 2>&1"), ArgLead)
 enddef
 def GitFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
     return Fuzzy(systemlist("git ls-files"), ArgLead)
+enddef
+def BufFiles(ArgLead: string, CmdLine: string, CursorPos: number): list<any>
+    return Fuzzy(map(filter(range(1, bufnr('$')), 'buflisted(v:val)'), 'fnamemodify(bufname(v:val), ":~:.")'), ArgLead)
 enddef
 
 def RangerExplorer()
@@ -122,55 +109,20 @@ def RangerExplorer()
     endif
     redraw!
 enddef
-#  end functions
+# end functions
 
-#  commands
+# commands
 command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
 
 command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
 command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
 command! -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
+command! -nargs=1 -complete=customlist,BufFiles BufFiles edit <args>
 
 command! -nargs=+ Grep cgetexpr system(&grepprg .. ' <args>') | copen
 command! -nargs=+ Grepi cgetexpr system(&grepprg .. ' --ignore-case <args>') | copen
-#  end commands
-
-# mru
-g:recent_files = []
-g:recent_files_max_entries = 100
-g:recent_files_file = $'{fnamemodify($MYVIMRC, ":p:h")}/.vim/mru'
-def g:RecentFiles(): list<any>
-    if filereadable(g:recent_files_file)
-        g:recent_files = readfile(g:recent_files_file)
-    endif
-    return copy(g:recent_files)->map('fnamemodify(v:val, ":~:.")')
-enddef
-
-augroup mru | autocmd!
-    def AddRecentFile(bufnr: string)
-        if !empty(&buftype) | return | endif
-
-        if filereadable(g:recent_files_file)
-            g:recent_files = readfile(g:recent_files_file)
-        endif
-
-        var fname = bufname(eval(bufnr))->fnamemodify(':p')
-        if !filereadable(fname) | return | endif
-
-        g:recent_files->filter((_, v) => v !=# fname)
-        g:recent_files->insert(fname)
-
-        if g:recent_files->len() > g:recent_files_max_entries
-            g:recent_files->remove(g:recent_files_max_entries, -1)
-        endif
-
-        g:recent_files->writefile(g:recent_files_file)
-    enddef
-
-    autocmd BufRead,BufWritePost,BufEnter * call AddRecentFile(expand('<abuf>'))
-augroup END
-# end mru
+# end commands
 
 # Install plug like this
 # curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -183,8 +135,9 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     Plug 'dense-analysis/ale'
     Plug 'yegappan/lsp'
     Plug 'girishji/devdocs.vim'
-    Plug 'girishji/autosuggest.vim'
+    # Plug 'girishji/autosuggest.vim'
     Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+    Plug 'junegunn/fzf.vim'
     Plug 'markonm/traces.vim'
     Plug 'sheerun/vim-polyglot'
     Plug 'joshdick/onedark.vim'
@@ -193,43 +146,14 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
     # silent! colorscheme onedark
 
     # fuzzy finders, override the default ones
-    g:fzf_popup_option = '-i --ansi --bind tab:up,shift-tab:down'
-    command! GitFiles call fzf#run(fzf#wrap({
-                \ 'source': 'git ls-files', 'sink': 'e',
-                \ 'options': g:fzf_popup_option .. ' --prompt "GFiles> "'}))
-    nnoremap <leader>sf :GitFiles<CR>
-
-    command! AllFiles call fzf#run(fzf#wrap({
-                \ 'source': 'find . -type f', 'sink': 'e',
-                \ 'options': g:fzf_popup_option .. ' --prompt "Files> "'}))
-    nnoremap <leader>sh :AllFiles<CR>
-
-    command! MRUFiles call fzf#run(fzf#wrap({
-                \ 'source': g:RecentFiles(), 'sink': 'e',
-                \ 'options': g:fzf_popup_option .. ' --no-sort --header-lines ' .. (empty(expand('%')) ? '0' : '1') .. ' --prompt "History> "'}))
-    nnoremap <leader>? :MRUFiles<CR>
-
-    # git
-    def Go2LineGrep(selected: string)
-        var parts = split(selected, ':')
-        execute 'e' parts[0]
-        cursor(eval(parts[1]), eval(parts[2]))
-    enddef
-    g:fzf_git_grep = 'git grep --line-number --column --color -- '
-    command! -nargs=* GGrep call fzf#run(fzf#wrap({
-                \ 'source': g:fzf_git_grep .. shellescape(<q-args>), 'sink': function('Go2LineGrep'),
-                \ 'options': g:fzf_popup_option .. ' --prompt "GitGrep [' .. shellescape(<q-args>) .. ']> "'}))
-    nnoremap <leader>gg :GGrep <space>
-
-    def GitStatusEdit(selected: string)
-        var parts = split(selected, ' ')
-        if parts[0] == 'D' | echohl ErrorMsg | echo 'This file has been deleted' | echohl None | return | endif
-        if parts[1] == '' | execute 'e' parts[2] | else | execute 'e' parts[1] | endif
-    enddef
-    command! GStatus call fzf#run(fzf#wrap({
-                \ 'source': 'git -c color.status=always status -s', 'sink': function('GitStatusEdit'),
-                \ 'options': g:fzf_popup_option .. ' --prompt "GitStatus> "'}))
-    nnoremap <leader>gs :GStatus <CR>
+    g:fzf_vim = {}
+    g:fzf_vim.preview_window = []
+    nnoremap <leader>sf :GFiles<CR>
+    nnoremap <leader>sh :Files<CR>
+    nnoremap <leader>? :History<CR>
+    nnoremap <leader>gs :GFiles?<CR>
+    nnoremap <leader>sm :Marks<CR>
+    nnoremap <leader><leader> :Buffers<CR>
 
     g:gitgutter_map_keys = 1
     g:gitgutter_show_msg_on_hunk_jumping = 1
@@ -289,8 +213,7 @@ if filereadable(expand('~/.vim/autoload/plug.vim'))
         },
     ]
 
-    augroup Lsp
-        au!
+    augroup Lsp | au!
         autocmd User LspSetup call LspOptionsSet(g:lspOpts)
         autocmd User LspSetup call LspAddServer(g:lspServers)
         autocmd User LspAttached {
