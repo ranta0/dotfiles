@@ -87,12 +87,6 @@ RUN curl -sLo go$GO_VERSION.linux-amd64.tar.gz "https://go.dev//dl/go$GO_VERSION
 # # Install Azure CLI
 # RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash -s -- -y
 
-# Install pandoc
-ARG PANDOC_VERSION=3.3
-RUN curl -sLo pandoc-$PANDOC_VERSION.tar.gz "https://github.com/jgm/pandoc/releases/download/$PANDOC_VERSION/pandoc-$PANDOC_VERSION-linux-amd64.tar.gz" \
-  && tar xzf pandoc-$PANDOC_VERSION.tar.gz \
-  && ln -s $WORK_DIR/pandoc-$PANDOC_VERSION/bin/pandoc $DEST/pandoc
-
 # neovim release
 ARG NVIM_VERSION=0.10.0
 RUN curl -sLo nvim-linux64.tar.gz "https://github.com/neovim/neovim/releases/download/v$NVIM_VERSION/nvim-linux64.tar.gz" \
@@ -125,10 +119,7 @@ RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
   pnpm \
   eslint \
   prettier \
-  intelephense \
-  typescript \
-  typescript-language-server \
-  @vue/language-server
+  intelephense
 
 # Install rust
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
@@ -138,12 +129,6 @@ RUN /usr/local/go/bin/go install golang.org/x/tools/gopls@latest \
   && sudo ln -s /home/$USERNAME/go/bin/gopls $DEST/gopls \
   && /home/$USERNAME/.cargo/bin/rustup component add rust-analyzer \
   && sudo ln -s /home/$USERNAME/.cargo/bin/rust-analyzer $DEST/rust-analyzer
-
-RUN sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/tsserver $DEST/tsserver \
-  && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/typescript-language-server $DEST/typescript-language-server \
-  && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/intelephense $DEST/intelephense \
-  && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/vue-language-server $DEST/vue-language-server \
-  && sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/lib/node_modules/typescript/lib/ $DEST/typescript-lib
 
 # # Install krew
 # RUN set -x; cd "$(mktemp -d)" \
@@ -157,6 +142,7 @@ RUN sudo ln -s /home/$USERNAME/.nvm/versions/node/v$NODE_VERSION/bin/tsserver $D
 # Autocompletion
 RUN curl -o ~/.git-prompt.sh https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
 
+# Setting up env
 ARG DOTFILES=https://github.com/ranta0/dotfiles
 RUN git clone $DOTFILES ~/dotfiles \
   && rm ~/.bashrc \
@@ -165,17 +151,11 @@ RUN git clone $DOTFILES ~/dotfiles \
   && ln -s ~/dotfiles/.vimrc ~/.vimrc \
   && ln -s ~/dotfiles/.gitconfig ~/.gitconfig \
   && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf \
-  && ln -s ~/dotfiles/plug.lock ~/plug.lock
-
-ARG NVIM_CONFIG=https://github.com/ranta0/nvim
-RUN mkdir -p .config/nvim \
-  && git clone $NVIM_CONFIG .config/nvim \
-  && chown $USERNAME:$USERNAME .config/nvim
-
-# Install nvim packages
-# this is not working as intended
-# RUN nvim --headless "+Lazy! sync" +qa \
-#   && nvim --headless "+MasonToolsInstallSync" +qa
+  && ln -s ~/dotfiles/plug.lock ~/plug.lock \
+  && mkdir -p ~/.vim/ \
+  && ln -s ~/dotfiles/.vim/coc-settings.json ~/.vim/coc-settings.json \
+  && mkdir -p ~/.config/ \
+  && ln -s ~/dotfiles/.config/nvim ~/.config/nvim
 
 # Install vim packages
 RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \

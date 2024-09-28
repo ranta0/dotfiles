@@ -28,17 +28,3 @@ tnew() {
 		tmux attach-session -t $1 || tmux -u new -s $1
 	fi
 }
-
-# switch panes and sessions
-tlsi() {
-	if [ -n "$TMUX" ]; then
-		tmux list-panes -aF "#{session_name}:#{window_index}.#{pane_index} #{b:pane_current_path} => #{pane_current_path}: #{pane_current_command}" |
-			fzf --layout=reverse |
-			awk -F ' ' '{print $1}' |
-			xargs -I {} tmux switch-client -t {}
-	else
-		tmux attach-session -t $(tmux list-sessions -F "#{session_name}:#{window_index}.#{pane_index} #{b:pane_current_path} => #{pane_current_path}: #{pane_current_command}" |
-			fzf --layout=reverse |
-			awk -F ':' '{print $1}')
-	fi
-}

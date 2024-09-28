@@ -1,0 +1,37 @@
+{
+    "suggest.noselect": true,
+    "coc.preferences.useQuickfixForLocations": true,
+    "coc.preferences.promptInput": false,
+    "coc.preferences.enableMessageDialog": true,
+    "coc.preferences.extensionUpdateCheck": "daily",
+    "suggest.snippetsSupport": false,
+    "languageserver": {
+        "golang": {
+            "command": "gopls",
+            "rootPatterns": [
+                "go.mod"
+            ],
+            "filetypes": [
+                "go"
+            ]
+        },
+        "rust": {
+            "command": "rust-analyzer",
+            "filetypes": [
+                "rust"
+            ],
+            "rootPatterns": [
+                "Cargo.toml"
+            ]
+        },
+        "godot": {
+            "host": "127.0.0.1",
+            "filetypes": [
+                "gd",
+                "gdscript",
+                "gdscript3"
+            ],
+            "port": 6005
+        }
+    }
+}
