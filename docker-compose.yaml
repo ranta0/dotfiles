@@ -1,7 +1,7 @@
 services:
   base:
     build:
-      context: debian/.
+      context: devcontainer/debian/.
       args:
         USERNAME: test-dev
     stdin_open: true

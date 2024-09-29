@@ -106,6 +106,7 @@ command! -nargs=+ Grep cgetexpr system(&grepprg . ' <args>') | copen
 command! -nargs=+ Grepi cgetexpr system(&grepprg . ' --ignore-case <args>') | copen
 
 highlight ExtraWhitespace ctermbg=red guibg=red | match ExtraWhitespace /\s\+$/
+autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red | match ExtraWhitespace /\s\+$/
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 " end commands
 
@@ -123,10 +124,11 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'francoiscabrol/ranger.vim'
+Plug 'habamax/vim-godot'
 if !has('nvim')
     Plug 'markonm/traces.vim'
     Plug 'joshdick/onedark.vim'
-    Plug 'sheerun/vim-polyglot'
+    Plug 'leafOfTree/vim-vue-plugin'
 else
     Plug 'rbgrouleff/bclose.vim'
     Plug 'navarasu/onedark.nvim'
@@ -136,6 +138,7 @@ call plug#end()
 
 silent! colorscheme onedark
 let g:ranger_replace_netrw = 0
+let g:ranger_command_override = 'ranger --cmd "set show_hidden=true"'
 
 " fuzzy finders, override the standard ones
 let $FZF_DEFAULT_OPTS = '--ignore-case'
@@ -170,8 +173,6 @@ function! CheckBackspace() abort
 endfunction
 inoremap <silent><expr> <c-@> coc#refresh()
 
-nmap <silent> ]d <Plug>(coc-diagnostic-next)
-nmap <silent> [d <Plug>(coc-diagnostic-prev)
 nmap <silent> <leader>gd <Plug>(coc-definition)
 nmap <silent> <leader>gy <Plug>(coc-type-definition)
 nmap <silent> <leader>gi <Plug>(coc-implementation)
@@ -179,6 +180,8 @@ nmap <silent> <leader>gr <Plug>(coc-references)
 nmap <silent> <leader>ca <Plug>(coc-codeaction-refactor)
 nmap <silent> <leader>mf :call CocActionAsync('format')<CR>
 nmap <leader>rn <Plug>(coc-rename)
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <leader>a  <Plug>(coc-codeaction-selected)
 
 nnoremap <silent> K :call CocActionAsync('doHover')<cr>
 nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
@@ -188,14 +191,18 @@ inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float
 vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
 vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 
-nnoremap <silent><nowait> <leader>o  :<C-u>CocList -A outline -kind<CR>
-nnoremap <silent><nowait> <leader>w  :<C-u>CocList -I -N symbols<CR>
+nnoremap <silent><nowait> <leader>td  :<C-u>CocList diagnostics<cr>
+nnoremap <silent><nowait> <leader>o   :<C-u>CocList -A outline -kind<CR>
+nnoremap <silent><nowait> <leader>w   :<C-u>CocList -I -N symbols<CR>
 
+nmap <silent> ]d <Plug>(coc-diagnostic-next)
+nmap <silent> [d <Plug>(coc-diagnostic-prev)
 nmap <silent> <expr> [c &diff ? '[c' : '<Plug>(coc-git-prevchunk)'
 nmap <silent> <expr> ]c &diff ? ']c' : '<Plug>(coc-git-nextchunk)'
 
-autocmd Filetype vue setlocal iskeyword+=-
 command! -nargs=0 Prettier CocCommand prettier.formatFile
+command! -nargs=? Fold :call CocAction('fold', <f-args>)
 
 " commentstring
+autocmd Filetype vue setlocal iskeyword+=-
 autocmd FileType php setlocal commentstring=//\ %s

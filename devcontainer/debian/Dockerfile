@@ -114,12 +114,7 @@ RUN git clone https://github.com/nvm-sh/nvm.git .nvm \
   && . ./nvm.sh \
   && nvm install v$NODE_VERSION \
   && nvm alias default v$NODE_VERSION \
-  && nvm use default \
-  && npm install -g \
-  pnpm \
-  eslint \
-  prettier \
-  intelephense
+  && nvm use default
 
 # Install rust
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
