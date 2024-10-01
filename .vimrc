@@ -11,10 +11,10 @@ set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
 set nohidden autoread
 set list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 set hlsearch incsearch
+if has('nvim') | set inccommand=split | endif
 set showcmd noruler laststatus=2 shortmess-=S signcolumn=yes
 set statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
-set path=.,,
-set wildmenu
+set path=.,, wildmenu
 if v:version >= 900 && !has('nvim') | set wildoptions=pum | endif
 set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 set updatetime=50 lazyredraw ttyfast ttimeoutlen=50
@@ -105,8 +105,10 @@ command! -nargs=1 -complete=customlist,BufFiles BufFiles edit <args>
 command! -nargs=+ Grep cgetexpr system(&grepprg . ' <args>') | copen
 command! -nargs=+ Grepi cgetexpr system(&grepprg . ' --ignore-case <args>') | copen
 
-highlight ExtraWhitespace ctermbg=red guibg=red | match ExtraWhitespace /\s\+$/
-autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red | match ExtraWhitespace /\s\+$/
+if !has('nvim')
+    highlight ExtraWhitespace ctermbg=red guibg=red | match ExtraWhitespace /\s\+$/
+    autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red | match ExtraWhitespace /\s\+$/
+endif
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 " end commands
 
@@ -199,10 +201,13 @@ nmap <silent> ]d <Plug>(coc-diagnostic-next)
 nmap <silent> [d <Plug>(coc-diagnostic-prev)
 nmap <silent> <expr> [c &diff ? '[c' : '<Plug>(coc-git-prevchunk)'
 nmap <silent> <expr> ]c &diff ? ']c' : '<Plug>(coc-git-nextchunk)'
+nmap go <Plug>(coc-git-chunkinfo)
+omap ig <Plug>(coc-git-chunk-inner)
+xmap ig <Plug>(coc-git-chunk-inner)
+set statusline^=%{get(g:,'coc_git_status','')}%{get(b:,'coc_git_status','')}%{get(b:,'coc_git_blame','')}
 
 command! -nargs=0 Prettier CocCommand prettier.formatFile
 command! -nargs=? Fold :call CocAction('fold', <f-args>)
 
-" commentstring
 autocmd Filetype vue setlocal iskeyword+=-
 autocmd FileType php setlocal commentstring=//\ %s
