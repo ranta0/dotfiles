@@ -13,6 +13,7 @@ alias g="git"
 alias kl="kubectl"
 alias kn="kubectl-ns"
 alias kx="kubectl-ctx"
+alias tv="tmux capture-pane -Jp -S- | vim -c 'setlocal buftype=nofile' -"
 
 # ls after cd
 cd() {

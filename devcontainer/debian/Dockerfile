@@ -153,7 +153,8 @@ RUN git clone $DOTFILES ~/dotfiles \
   && ln -s ~/dotfiles/.config/nvim ~/.config/nvim
 
 # Install vim packages
-RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim \
-  && vim +PlugInstall +qall
+RUN vim +PlugInstall +qall
+RUN nvim +PlugInstall +qa
+RUN nvim +PlugInstall +qa
 
 CMD ["bash"]

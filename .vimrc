@@ -49,11 +49,6 @@ vnoremap <silent> < <gv
 vnoremap $ $h
 nnoremap ]q :cn<CR>
 nnoremap [q :cp<CR>
-" splits
-nnoremap <C-Up> :resize +5<CR>
-nnoremap <C-Down> :resize -5<CR>
-nnoremap <C-Right> :vertical resize +5<CR>
-nnoremap <C-Left> :vertical resize -5<CR>
 " toggles
 nnoremap ,n :set relativenumber!<CR>
 nnoremap ,w :set wrap!<CR>

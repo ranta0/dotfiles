@@ -71,4 +71,9 @@ RUN git clone $DOTFILES ~/dotfiles \
   && mkdir -p ~/.config/ \
   && ln -s ~/dotfiles/.config/nvim ~/.config/nvim
 
+# Install vim packages
+RUN vim +PlugInstall +qall
+RUN nvim --headless +PlugInstall +qa
+RUN nvim --headless +PlugInstall +qa
+
 CMD ["bash"]
