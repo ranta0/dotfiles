@@ -49,10 +49,16 @@ vnoremap <silent> < <gv
 vnoremap $ $h
 nnoremap ]q :cn<CR>
 nnoremap [q :cp<CR>
+" splits
+nnoremap <C-Up> :resize +5<CR>
+nnoremap <C-Down> :resize -5<CR>
+nnoremap <C-Right> :vertical resize +5<CR>
+nnoremap <C-Left> :vertical resize -5<CR>
 " toggles
 nnoremap ,n :set relativenumber!<CR>
 nnoremap ,w :set wrap!<CR>
 nnoremap ,p :set paste!<CR>
+nnoremap ,r :Scratch<CR>:%!
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 " nope
 nnoremap Q <nop>
@@ -185,15 +191,15 @@ nmap <leader>rn <Plug>(coc-rename)
 xmap <leader>a  <Plug>(coc-codeaction-selected)
 nmap <leader>a  <Plug>(coc-codeaction-selected)
 
-nnoremap <silent> K :call CocActionAsync('doHover')<cr>
+nnoremap <silent> K :call CocActionAsync('doHover')<CR>
 nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
 nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<cr>" : "\<Right>"
-inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<cr>" : "\<Left>"
+inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<CR>" : "\<Right>"
+inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<CR>" : "\<Left>"
 vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
 vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 
-nnoremap <silent><nowait> <leader>td  :<C-u>CocList diagnostics<cr>
+nnoremap <silent><nowait> <leader>td  :<C-u>CocList diagnostics<CR>
 nnoremap <silent><nowait> <leader>o   :<C-u>CocList -A outline -kind<CR>
 nnoremap <silent><nowait> <leader>w   :<C-u>CocList -I -N symbols<CR>
 

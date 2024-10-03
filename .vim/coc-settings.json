@@ -4,6 +4,7 @@
   "coc.preferences.promptInput": false,
   "coc.preferences.enableMessageDialog": true,
   "coc.preferences.extensionUpdateCheck": "daily",
+  "intelephense.client.disableSnippetsCompletion": true,
   "suggest.snippetsSupport": false,
   "languageserver": {
     "golang": {
