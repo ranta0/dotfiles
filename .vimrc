@@ -25,7 +25,7 @@ if v:version >= 703 && !has('nvim') && !isdirectory($UNDO_DATA)
 endif
 set undodir=$UNDO_DATA undofile nobackup noswapfile
 
-set grepprg=grep\ -rnH\ --exclude-dir=.git\ --exclude-dir=node_modules\ --exclude-dir=vendor
+set grepprg=grep\ -rnH\ --exclude-dir=.git\ --exclude-dir=node_modules\ --exclude-dir=vendor\ --exclude-dir=dist
 set grepformat=%f:%l:%m
 
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
@@ -63,6 +63,7 @@ nnoremap gQ <nop>
 let mapleader = " "
 nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sf :GitFiles <space>
+nnoremap <leader>gs :GitStatus <space>
 nnoremap <leader>sh :AllFiles <space>
 nnoremap <leader>? :MRUFiles <space>
 nnoremap <leader><leader> :BufFiles <space>
@@ -77,17 +78,20 @@ nnoremap <silent> <leader>dm :delmarks A-Z<CR>
 
 " functions
 function! Fuzzy(files, search)
-    if empty(a:search) && v:version < 900 | return a:files | endif
+    if empty(a:search) || v:version < 900 | return a:files | endif
     return matchfuzzy(a:files, a:search)
 endfunction
 function! MRUFiles(arg, ...)
     return Fuzzy(copy(v:oldfiles)->map('fnamemodify(v:val, ":~:.")'), a:arg)
 endfunction
 function! AllFiles(arg, ...)
-    return Fuzzy(systemlist("find . -type f 2>&1"), a:arg)
+    return Fuzzy(systemlist('find . -type f -not -path "*.git*/*" -not -path "*vendor*/*" -not -path "*node_modules*/*" -not -path "*dist*/*"'), a:arg)
 endfunction
 function! GitFiles(arg, ...)
     return Fuzzy(systemlist("git ls-files"), a:arg)
+endfunction
+function! GitStatus(arg, ...)
+    return Fuzzy(systemlist("git status -s"), a:arg)
 endfunction
 function! BufFiles(arg, ...)
     return Fuzzy(map(filter(range(1, bufnr('$')), 'buflisted(v:val)'), 'fnamemodify(bufname(v:val), ":~:.")'), a:arg)
@@ -102,6 +106,8 @@ command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
 command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
 command! -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 command! -nargs=1 -complete=customlist,BufFiles BufFiles edit <args>
+command! -nargs=1 -complete=customlist,GitStatus GitStatus let parts = split("<args>", ' ') |
+            \ if parts[1] == '' | execute 'e' parts[2] | else | execute 'e' parts[1] | endif
 
 command! -nargs=+ Grep cgetexpr system(&grepprg . ' <args>') | copen
 command! -nargs=+ Grepi cgetexpr system(&grepprg . ' --ignore-case <args>') | copen
@@ -121,12 +127,9 @@ endif
 
 call plug#begin()
 Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-sleuth'
+Plug 'tomtom/tcomment_vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'gelguy/Cmd2.vim'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
 Plug 'francoiscabrol/ranger.vim'
 Plug 'habamax/vim-godot'
 if !has('nvim')
@@ -144,18 +147,7 @@ silent! colorscheme onedark
 let g:ranger_replace_netrw = 0
 let g:ranger_command_override = 'ranger --cmd "set show_hidden=true"'
 
-" fuzzy finders, override the standard ones
-let $FZF_DEFAULT_OPTS = '--ignore-case'
-let g:fzf_vim = {}
-let g:fzf_vim.preview_window = []
-nnoremap <leader>sf :GFiles<CR>
-nnoremap <leader>sh :Files<CR>
-nnoremap <leader>? :History<CR>
-nnoremap <leader>gs :GFiles?<CR>
-nnoremap <leader>sm :Marks<CR>
-nnoremap <leader><leader> :Buffers<CR>
-
-nmap / /<Plug>(Cmd2Suggest)
+vnoremap gbb :TCommentBlock<CR>
 
 " coc
 let g:coc_enable_locationlist = 0
@@ -171,8 +163,11 @@ inoremap <silent><expr> <TAB>
             \ CheckBackspace() ? "\<Tab>" :
             \ coc#refresh()
 inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
-inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
-            \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+if coc#rpc#ready()
+    inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+endif
+
 function! CheckBackspace() abort
     let col = col('.') - 1
     return !col || getline('.')[col - 1]  =~# '\s'
@@ -214,4 +209,3 @@ command! -nargs=0 Prettier CocCommand prettier.formatFile
 command! -nargs=? Fold :call CocAction('fold', <f-args>)
 
 autocmd Filetype vue setlocal iskeyword+=-
-autocmd FileType php setlocal commentstring=//\ %s
