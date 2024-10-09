@@ -124,7 +124,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-sleuth'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'gelguy/wilder.nvim'
+Plug 'gelguy/Cmd2.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'francoiscabrol/ranger.vim'
@@ -155,20 +155,7 @@ nnoremap <leader>gs :GFiles?<CR>
 nnoremap <leader>sm :Marks<CR>
 nnoremap <leader><leader> :Buffers<CR>
 
-" wilder
-call wilder#setup({'modes': [':', '/']})
-call wilder#set_option('pipeline', [
-            \   wilder#branch(
-            \     wilder#cmdline_pipeline(),
-            \     wilder#search_pipeline(),
-            \   ),
-            \ ])
-call wilder#set_option('renderer', wilder#popupmenu_renderer({
-            \ 'highlighter': wilder#basic_highlighter(),
-            \ 'highlights': {
-            \   'accent': wilder#make_hl('WilderAccent', 'Pmenu', [{}, {}, {'foreground': '#f4468f'}]),
-            \ },
-            \ }))
+nmap / /<Plug>(Cmd2Suggest)
 
 " coc
 let g:coc_enable_locationlist = 0
