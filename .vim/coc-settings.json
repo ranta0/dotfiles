@@ -5,6 +5,7 @@
   "coc.preferences.enableMessageDialog": true,
   "coc.preferences.extensionUpdateCheck": "daily",
   "intelephense.client.disableSnippetsCompletion": true,
+  "git.branchCharacter": "",
   "suggest.snippetsSupport": false,
   "languageserver": {
     "golang": {
