@@ -1,10 +1,6 @@
 filetype plugin indent on
 syntax enable
 
-" cursor modes
-let &t_SI = "\<Esc>[6 q"
-let &t_EI = "\<Esc>[2 q"
-
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf-8,latin
 set number relativenumber nowrap
 set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
@@ -15,19 +11,15 @@ if has('nvim') | set inccommand=split | endif
 set showcmd noruler laststatus=2 shortmess-=S signcolumn=yes
 set statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 set path=.,, wildmenu
-if v:version >= 900 && !has('nvim') | set wildoptions=pum | endif
+if v:version >= 900 | set wildoptions=pum | endif
 set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 set updatetime=50 lazyredraw ttyfast ttimeoutlen=50
 
 let $UNDO_DATA = (has('nvim') ? $HOME . '/.vim/undodir' : $HOME . '/.vim/undo')
-if v:version >= 703 && !has('nvim') && !isdirectory($UNDO_DATA)
-    silent !mkdir -p $UNDO_DATA
-endif
 set undodir=$UNDO_DATA undofile nobackup noswapfile
 
-set grepprg=grep\ -rnH\ --exclude-dir=.git\ --exclude-dir=node_modules\ --exclude-dir=vendor\ --exclude-dir=dist
-set grepformat=%f:%l:%m
-
+let &t_SI = "\<Esc>[6 q"
+let &t_EI = "\<Esc>[2 q"
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 set background=dark
@@ -102,8 +94,9 @@ command! -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 command! -nargs=1 -complete=customlist,GitStatus GitStatus let parts = split("<args>", ' ') |
             \ if parts[1] == '' | execute 'e' parts[2] | else | execute 'e' parts[1] | endif
 
-command! -nargs=+ Grep cgetexpr system(&grepprg . ' <args>') | copen
-command! -nargs=+ Grepi cgetexpr system(&grepprg . ' --ignore-case <args>') | copen
+let g:grep= 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=dist'
+command! -nargs=+ Grep cgetexpr system(g:grep . ' <args>') | copen
+command! -nargs=+ Grepi cgetexpr system(g:grep . ' --ignore-case <args>') | copen
 
 if !has('nvim')
     highlight ExtraWhitespace ctermbg=red guibg=red | match ExtraWhitespace /\s\+$/
