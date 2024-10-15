@@ -2,18 +2,14 @@ filetype plugin indent on
 syntax enable
 
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf-8,latin
-set number relativenumber nowrap
-set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
-set nohidden autoread
+set nowrap tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
+set rnu nu nohidden autoread hlsearch incsearch
 set list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-set hlsearch incsearch
-if has('nvim') | set inccommand=split | endif
-set showcmd noruler laststatus=2 shortmess-=S signcolumn=yes
-set statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
-set path=.,, wildmenu
-if v:version >= 900 | set wildoptions=pum | endif
-set wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
+set showcmd noruler laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
+set path=.,, wildmenu wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 set updatetime=50 lazyredraw ttyfast ttimeoutlen=50
+if v:version >= 900 | set wildoptions=pum | endif
+if has('nvim') | set inccommand=split | endif
 
 let $UNDO_DATA = (has('nvim') ? $HOME . '/.vim/undodir' : $HOME . '/.vim/undo')
 set undodir=$UNDO_DATA undofile nobackup noswapfile
@@ -22,8 +18,7 @@ let &t_SI = "\<Esc>[6 q"
 let &t_EI = "\<Esc>[2 q"
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-set background=dark
-set termguicolors
+set background=dark termguicolors
 colorscheme habamax
 
 nnoremap k gk
@@ -41,13 +36,17 @@ vnoremap <silent> < <gv
 vnoremap $ $h
 nnoremap ]q :cn<CR>
 nnoremap [q :cp<CR>
-nnoremap ,n :set relativenumber! relativenumber?<CR>
+nnoremap ,n :set rnu! nu! rnu?<CR>
 nnoremap ,w :set wrap! wrap?<CR>
 nnoremap ,p :set paste! paste?<CR>
 nnoremap ,r :Scratch<CR>:%!
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap Q <nop>
 nnoremap gQ <nop>
+for ch in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    exe $'nnoremap <silent> m{tolower(ch)} m{ch}'
+    exe $"nnoremap <silent> '{tolower(ch)} `{ch}"
+endfor
 
 let mapleader = " "
 nmap <silent> <leader>/ :let @/ = ""<CR>
@@ -58,11 +57,7 @@ nnoremap <leader>? :MRUFiles <space>
 nnoremap <leader><leader> :b <space>
 nnoremap <leader>- :Ex<CR>
 xnoremap <leader>y "+y
-
-for ch in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    exe $'nnoremap <silent> m{tolower(ch)} m{ch}'
-    exe $"nnoremap <silent> '{tolower(ch)} `{ch}"
-endfor
+nnoremap <leader>p "+p
 nnoremap <silent> <leader>dm :delmarks A-Z<CR>
 
 " functions
@@ -129,10 +124,9 @@ else
 endif
 call plug#end()
 
-silent! colorscheme onedark
+" silent! colorscheme onedark
 let g:ranger_replace_netrw = 0
 let g:ranger_command_override = 'ranger --cmd "set show_hidden=true"'
-
 vnoremap gbb :TCommentBlock<CR>
 
 " coc
@@ -189,7 +183,6 @@ nmap <silent> <expr> ]c &diff ? ']c' : '<Plug>(coc-git-nextchunk)'
 nmap go <Plug>(coc-git-chunkinfo)
 omap ig <Plug>(coc-git-chunk-inner)
 xmap ig <Plug>(coc-git-chunk-inner)
-set statusline^=%{get(g:,'coc_git_status','')}%{get(b:,'coc_git_status','')}%{get(b:,'coc_git_blame','')}\|
 
 command! -nargs=0 Prettier CocCommand prettier.formatFile
 command! -nargs=? Fold :call CocAction('fold', <f-args>)
