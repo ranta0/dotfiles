@@ -93,10 +93,6 @@ let g:grep= 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-d
 command! -nargs=+ Grep cgetexpr system(g:grep . ' <args>') | copen
 command! -nargs=+ Grepi cgetexpr system(g:grep . ' --ignore-case <args>') | copen
 
-if !has('nvim')
-    highlight ExtraWhitespace ctermbg=red guibg=red | match ExtraWhitespace /\s\+$/
-    autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red | match ExtraWhitespace /\s\+$/
-endif
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 " end commands
 
@@ -111,23 +107,30 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'francoiscabrol/ranger.vim'
+Plug 'lambdalisue/vim-fern'
 Plug 'habamax/vim-godot'
 if !has('nvim')
     Plug 'markonm/traces.vim'
     Plug 'joshdick/onedark.vim'
     Plug 'leafOfTree/vim-vue-plugin'
 else
-    Plug 'rbgrouleff/bclose.vim'
     Plug 'navarasu/onedark.nvim'
     Plug 'nvim-treesitter/nvim-treesitter'
 endif
 call plug#end()
 
-" silent! colorscheme onedark
-let g:ranger_replace_netrw = 0
-let g:ranger_command_override = 'ranger --cmd "set show_hidden=true"'
+nnoremap <silent><expr> <leader>gl ":G log -L " . line(".") . ",+1:" . expand("%:p") ."<CR>"
 vnoremap gbb :TCommentBlock<CR>
+nnoremap <BS> :Fern %:h<CR>
+function! FernInit() abort
+    nmap <buffer> - <Plug>(fern-action-leave)
+    nmap <buffer> <TAB> <Plug>(fern-action-mark)
+    nmap <buffer> % <Plug>(fern-action-new-file)
+    nmap <buffer> d <Plug>(fern-action-new-dir)
+endfunction
+augroup fern | autocmd!
+    autocmd FileType fern call FernInit()
+augroup END
 
 " coc
 let g:coc_enable_locationlist = 0
