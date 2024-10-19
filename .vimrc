@@ -122,11 +122,15 @@ call plug#end()
 nnoremap <silent><expr> <leader>gl ":G log -L " . line(".") . ",+1:" . expand("%:p") ."<CR>"
 vnoremap gbb :TCommentBlock<CR>
 nnoremap <BS> :Fern %:h<CR>
+
+let g:fern#hide_cursor = 1
+let g:fern#default_hidden = 1
 function! FernInit() abort
     nmap <buffer> - <Plug>(fern-action-leave)
     nmap <buffer> <TAB> <Plug>(fern-action-mark)
     nmap <buffer> % <Plug>(fern-action-new-file)
     nmap <buffer> d <Plug>(fern-action-new-dir)
+    nmap <buffer> D <Plug>(fern-action-remove)
 endfunction
 augroup fern | autocmd!
     autocmd FileType fern call FernInit()
