@@ -108,7 +108,7 @@ Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'lambdalisue/vim-fern'
-Plug 'habamax/vim-godot'
+Plug 'sedm0784/vim-resize-mode'
 if !has('nvim')
     Plug 'markonm/traces.vim'
     Plug 'joshdick/onedark.vim'
@@ -150,10 +150,8 @@ inoremap <silent><expr> <TAB>
             \ CheckBackspace() ? "\<Tab>" :
             \ coc#refresh()
 inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
-if has('gui') && coc#rpc#ready()
-    inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
-                \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
-endif
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+            \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
 function! CheckBackspace() abort
     let col = col('.') - 1
