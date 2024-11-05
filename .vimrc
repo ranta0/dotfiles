@@ -5,7 +5,7 @@ set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf
 set nowrap tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
 set rnu nu nohidden autoread hlsearch incsearch
 set list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-set showcmd noruler laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
+set showcmd noruler showmode laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 set path=.,, wildmenu wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
 set updatetime=50 lazyredraw ttyfast ttimeoutlen=50
 if v:version >= 900 | set wildoptions=pum | endif
@@ -43,6 +43,7 @@ nnoremap ,r :Scratch<CR>:%!
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap Q <nop>
 nnoremap gQ <nop>
+cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
 for ch in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     exe $'nnoremap <silent> m{tolower(ch)} m{ch}'
     exe $"nnoremap <silent> '{tolower(ch)} `{ch}"
@@ -77,11 +78,29 @@ endfunction
 function! GitStatus(arg, ...)
     return Fuzzy(systemlist("git status -s"), a:arg)
 endfunction
+
+function! ShellCommandOutput(command) abort
+    if bufexists('logshell') | call deletebufline('logshell', 1, '$') | endif
+
+    let job_command = [&shell, &shellcmdflag, escape(a:command, '\')]
+    if has("win32") | let job_command = a:command | endif
+
+    let logjob = job_start(job_command,
+                \ {'out_io': 'buffer', 'err_io': 'buffer', 'out_name': 'logshell', 'err_name': 'logshell', 'out_msg': ''})
+
+    let winnr = win_getid()
+    buffer logshell
+    if win_getid() != winnr | win_gotoid(winnr) | endif
+endfunction
 " end functions
 
 " commands
 command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
+
+if !has('nvim')
+    command! -complete=shellcmd -nargs=+ Sh call ShellCommandOutput(<q-args>)
+endif
 
 command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
 command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
