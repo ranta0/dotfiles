@@ -52,63 +52,47 @@ endfor
 let mapleader = " "
 nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sf :GitFiles <space>
-nnoremap <leader>gs :GitStatus <space>
 nnoremap <leader>sh :AllFiles <space>
 nnoremap <leader>? :MRUFiles <space>
 nnoremap <leader><leader> :b <space>
+nnoremap <expr> <leader>jsh ":Scratch<CR>:%!" . g:findcmd . "<CR><CR>"
 nnoremap <leader>- :Ex<CR>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
 nnoremap <silent> <leader>dm :delmarks A-Z<CR>
 
 " functions
+let g:findcmd = 'find . -type f -not -path "" -not -path "*vendor*/*" -not -path "*node_modules*/*" -not -path "*dist*/*"'
+if has("win32") | let g:findcmd = 'dir /s /b /a-d' | endif
+
 function! Fuzzy(files, search)
-    if empty(a:search) || v:version < 900 | return a:files | endif
-    return matchfuzzy(a:files, a:search)
+    if empty(a:search) | return a:files | endif
+    if v:version < 900
+        return copy(a:files)->filter('v:val =~ a:search')
+    else
+        return matchfuzzy(a:files, a:search)
+    endif
 endfunction
 function! MRUFiles(arg, ...)
     return Fuzzy(copy(v:oldfiles)->filter('filereadable(fnamemodify(v:val, ":p"))')->map('fnamemodify(v:val, ":~:.")'), a:arg)
 endfunction
 function! AllFiles(arg, ...)
-    return Fuzzy(systemlist('find . -type f -not -path "*.git*/*" -not -path "*vendor*/*" -not -path "*node_modules*/*" -not -path "*dist*/*"'), a:arg)
+    return Fuzzy(systemlist(g:findcmd), a:arg)
 endfunction
 function! GitFiles(arg, ...)
     return Fuzzy(systemlist("git ls-files"), a:arg)
-endfunction
-function! GitStatus(arg, ...)
-    return Fuzzy(systemlist("git status -s"), a:arg)
-endfunction
-
-function! ShellCommandOutput(command) abort
-    if bufexists('logshell') | call deletebufline('logshell', 1, '$') | endif
-
-    let job_command = [&shell, &shellcmdflag, escape(a:command, '\')]
-    if has("win32") | let job_command = a:command | endif
-
-    let logjob = job_start(job_command,
-                \ {'out_io': 'buffer', 'err_io': 'buffer', 'out_name': 'logshell', 'err_name': 'logshell', 'out_msg': ''})
-
-    let winnr = win_getid()
-    buffer logshell
-    if win_getid() != winnr | win_gotoid(winnr) | endif
 endfunction
 " end functions
 
 " commands
 command! Scratch if bufexists('scratch') | buffer scratch | else
-            \ | noswapfile hide enew | setlocal bt=nofile bh=hide | file scratch | endif
-
-if !has('nvim')
-    command! -complete=shellcmd -nargs=+ Sh call ShellCommandOutput(<q-args>)
-endif
+            \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 | file scratch | endif
 
 command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
 command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
 command! -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
-command! -nargs=1 -complete=customlist,GitStatus GitStatus let parts = split("<args>", ' ') |
-            \ if parts[1] == '' | execute 'e' parts[2] | else | execute 'e' parts[1] | endif
 
-let g:grep= 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=dist'
+let g:grep = 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=dist'
 command! -nargs=+ Grep cgetexpr system(g:grep . ' <args>') | copen
 command! -nargs=+ Grepi cgetexpr system(g:grep . ' --ignore-case <args>') | copen
 
@@ -138,6 +122,7 @@ else
 endif
 call plug#end()
 
+nnoremap <leader>gs :G <CR>
 nnoremap <silent><expr> <leader>gl ":G log -L " . line(".") . ",+1:" . expand("%:p") ."<CR>"
 vnoremap gbb :TCommentBlock<CR>
 nnoremap <BS> :Fern %:h<CR>
