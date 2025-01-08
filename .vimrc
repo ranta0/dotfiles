@@ -77,6 +77,7 @@ function! MRUFiles(arg, ...)
     return Fuzzy(copy(v:oldfiles)->filter('filereadable(fnamemodify(v:val, ":p"))')->map('fnamemodify(v:val, ":~:.")'), a:arg)
 endfunction
 function! AllFiles(arg, ...)
+    if has("win32") | return Fuzzy(systemlist(g:findcmd)->map('substitute(v:val, "\r", "", "")'), a:arg) | endif
     return Fuzzy(systemlist(g:findcmd), a:arg)
 endfunction
 function! GitFiles(arg, ...)
