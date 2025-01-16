@@ -39,7 +39,7 @@ nnoremap [q :cp<CR>
 nnoremap ,n :set rnu! nu! rnu?<CR>
 nnoremap ,w :set wrap! wrap?<CR>
 nnoremap ,p :set paste! paste?<CR>
-nnoremap ,r :Scratch<CR>:%!
+nnoremap ,r :Scratch<CR>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap Q <nop>
 nnoremap gQ <nop>
@@ -51,19 +51,30 @@ endfor
 
 let mapleader = " "
 nmap <silent> <leader>/ :let @/ = ""<CR>
-nnoremap <leader>sf :GitFiles <space>
 nnoremap <leader>sh :AllFiles <space>
 nnoremap <leader>? :MRUFiles <space>
 nnoremap <leader><leader> :b <space>
-nnoremap <expr> <leader>jsh ":Scratch<CR>:%!" . g:findcmd . "<CR><CR>"
-nnoremap <leader>- :Ex<CR>
+nnoremap <silent> <expr> <leader>jsh ":Scratch<CR>:%!" . g:findcmd . "<CR><CR>"
+nnoremap <silent> - :Ex<CR>
+nnoremap <silent><expr> <leader>- ":e " . g:root_dir . "<CR>"
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
 nnoremap <silent> <leader>dm :delmarks A-Z<CR>
 
+augroup vimrc | autocmd!
+    autocmd BufEnter * sil! lcd %:p:h
+    autocmd filetype netrw {
+        nmap <buffer> ls :echo join(netrw#Expose("netrwmarkfilelist"), "\n")<CR>
+    }
+augroup end
+let g:netrw_keepdir = 0
+let g:netrw_localcopydircmd = 'cp -r'
+hi! link netrwMarkFile ErrorMsg
+
 " functions
-let g:findcmd = 'find . -type f -not -path "" -not -path "*vendor*/*" -not -path "*node_modules*/*" -not -path "*dist*/*"'
-if has("win32") | let g:findcmd = 'dir /s /b /a-d' | endif
+let g:root_dir = getcwd()
+let g:findcmd = 'find ' . g:root_dir . ' -type f -not -path "*vendor*/*" -not -path "*node_modules*/*" -not -path "*dist*/*"'
+if has("win32") | let g:findcmd = 'dir /s /b /a-d ' . g:root_dir | endif
 
 function! Fuzzy(files, search)
     if empty(a:search) | return a:files | endif
@@ -77,11 +88,7 @@ function! MRUFiles(arg, ...)
     return Fuzzy(copy(v:oldfiles)->filter('filereadable(fnamemodify(v:val, ":p"))')->map('fnamemodify(v:val, ":~:.")'), a:arg)
 endfunction
 function! AllFiles(arg, ...)
-    if has("win32") | return Fuzzy(systemlist(g:findcmd)->map('substitute(v:val, "\r", "", "")'), a:arg) | endif
-    return Fuzzy(systemlist(g:findcmd), a:arg)
-endfunction
-function! GitFiles(arg, ...)
-    return Fuzzy(systemlist("git ls-files"), a:arg)
+    return Fuzzy(systemlist(g:findcmd)->map('substitute(v:val, "\r", "", "")')->map('fnamemodify(v:val, ":~:.")'), a:arg)
 endfunction
 " end functions
 
@@ -91,7 +98,6 @@ command! Scratch if bufexists('scratch') | buffer scratch | else
 
 command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
 command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
-command! -nargs=1 -complete=customlist,GitFiles GitFiles edit <args>
 
 let g:grep = 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=dist'
 command! -nargs=+ Grep cgetexpr system(g:grep . ' <args>') | copen
@@ -111,7 +117,6 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'lambdalisue/vim-fern'
 Plug 'sedm0784/vim-resize-mode'
 if !has('nvim')
     Plug 'markonm/traces.vim'
@@ -123,23 +128,8 @@ else
 endif
 call plug#end()
 
-nnoremap <leader>gs :G <CR>
-nnoremap <silent><expr> <leader>gl ":G log -L " . line(".") . ",+1:" . expand("%:p") ."<CR>"
-vnoremap gbb :TCommentBlock<CR>
-nnoremap <BS> :Fern %:h<CR>
-
-let g:fern#hide_cursor = 1
-let g:fern#default_hidden = 1
-function! FernInit() abort
-    nmap <buffer> - <Plug>(fern-action-leave)
-    nmap <buffer> <TAB> <Plug>(fern-action-mark)
-    nmap <buffer> % <Plug>(fern-action-new-file)
-    nmap <buffer> d <Plug>(fern-action-new-dir)
-    nmap <buffer> D <Plug>(fern-action-remove)
-endfunction
-augroup fern | autocmd!
-    autocmd FileType fern call FernInit()
-augroup END
+nnoremap <silent> <leader>gs :G <CR>
+vnoremap <silent> gbb :TCommentBlock<CR>
 
 " coc
 let g:coc_enable_locationlist = 0
