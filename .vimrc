@@ -63,13 +63,10 @@ nnoremap <silent> <leader>dm :delmarks A-Z<CR>
 
 augroup vimrc | autocmd!
     autocmd BufEnter * sil! lcd %:p:h
-    autocmd filetype netrw {
-        nmap <buffer> ls :echo join(netrw#Expose("netrwmarkfilelist"), "\n")<CR>
-    }
+    autocmd filetype netrw hi! link netrwMarkFile ErrorMsg
 augroup end
 let g:netrw_keepdir = 0
 let g:netrw_localcopydircmd = 'cp -r'
-hi! link netrwMarkFile ErrorMsg
 
 " functions
 let g:root_dir = getcwd()
