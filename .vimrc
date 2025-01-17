@@ -60,6 +60,7 @@ nnoremap <silent><expr> <leader>- ":e " . g:root_dir . "<CR>"
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
 nnoremap <silent> <leader>dm :delmarks A-Z<CR>
+nnoremap <silent> <leader><c-w> :call WinMode()<CR>
 
 augroup vimrc | autocmd!
     autocmd BufEnter * sil! lcd %:p:h
@@ -86,6 +87,19 @@ function! MRUFiles(arg, ...)
 endfunction
 function! AllFiles(arg, ...)
     return Fuzzy(systemlist(g:findcmd)->map('substitute(v:val, "\r", "", "")')->map('fnamemodify(v:val, ":~:.")'), a:arg)
+endfunction
+
+function! WinMode()
+    try
+        while 1
+            redraw | echohl ModeMsg | echo '-- WINMODE --'
+            let n = getchar()
+            if n == 27 | break | endif
+            exec 'normal ' . nr2char(23) . nr2char(n)
+        endwhile
+    finally
+        redraw! | echon ''
+    endtry
 endfunction
 " end functions
 
@@ -114,7 +128,6 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'sedm0784/vim-resize-mode'
 if !has('nvim')
     Plug 'markonm/traces.vim'
     Plug 'joshdick/onedark.vim'
