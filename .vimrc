@@ -75,6 +75,9 @@ let g:findcmd = 'find ' . g:root_dir . ' -type f -not -path "*vendor*/*" -not -p
 if has("win32") | let g:findcmd = 'dir /s /b /a-d ' . g:root_dir | endif
 
 function! Fuzzy(files, search)
+    execute "cd " . g:root_dir
+    let files = a:files->map('fnamemodify(v:val, ":~:.")')
+    execute "cd -"
     if empty(a:search) | return a:files | endif
     if v:version < 900
         return copy(a:files)->filter('v:val =~ a:search')
@@ -83,10 +86,10 @@ function! Fuzzy(files, search)
     endif
 endfunction
 function! MRUFiles(arg, ...)
-    return Fuzzy(copy(v:oldfiles)->filter('filereadable(fnamemodify(v:val, ":p"))')->map('fnamemodify(v:val, ":~:.")'), a:arg)
+    return Fuzzy(copy(v:oldfiles)->filter('filereadable(fnamemodify(v:val, ":p"))'), a:arg)
 endfunction
 function! AllFiles(arg, ...)
-    return Fuzzy(systemlist(g:findcmd)->map('substitute(v:val, "\r", "", "")')->map('fnamemodify(v:val, ":~:.")'), a:arg)
+    return Fuzzy(systemlist(g:findcmd)->map('substitute(v:val, "\r", "", "")'), a:arg)
 endfunction
 
 function! WinMode()
@@ -111,8 +114,8 @@ command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
 command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
 
 let g:grep = 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=dist'
-command! -nargs=+ Grep cgetexpr system(g:grep . ' <args>') | copen
-command! -nargs=+ Grepi cgetexpr system(g:grep . ' --ignore-case <args>') | copen
+if has("win32") | let g:grep = 'findstr /s /n /i' | endif
+command! -nargs=+ Grep cgetexpr system(g:grep . ' <args> '  . g:root_dir) | copen
 
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 " end commands
