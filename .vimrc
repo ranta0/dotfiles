@@ -62,22 +62,20 @@ nnoremap <leader>p "+p
 nnoremap <silent> <leader>dm :delmarks A-Z<CR>
 nnoremap <silent> <leader><c-w> :call WinMode()<CR>
 
+let g:root_dir = getcwd()
 augroup vimrc | autocmd!
-    autocmd BufEnter * sil! lcd %:p:h
+    autocmd BufEnter * if &filetype !=# 'netrw' | exec "lcd " . g:root_dir | endif
     autocmd filetype netrw hi! link netrwMarkFile ErrorMsg
 augroup end
 let g:netrw_keepdir = 0
 let g:netrw_localcopydircmd = 'cp -r'
 
 " functions
-let g:root_dir = getcwd()
 let g:findcmd = 'find ' . g:root_dir . ' -type f -not -path "*vendor*/*" -not -path "*node_modules*/*" -not -path "*dist*/*"'
-if has("win32") | let g:findcmd = 'dir /s /b /a-d ' . g:root_dir | endif
+if has("win32") | let g:findcmd = 'dir /s /b /a-d "' . g:root_dir . '"' | endif
 
 function! Fuzzy(files, search)
-    execute "cd " . g:root_dir
     let files = a:files->map('fnamemodify(v:val, ":~:.")')
-    execute "cd -"
     if empty(a:search) | return a:files | endif
     if v:version < 900
         return copy(a:files)->filter('v:val =~ a:search')
@@ -113,9 +111,9 @@ command! Scratch if bufexists('scratch') | buffer scratch | else
 command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
 command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
 
-let g:grep = 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=dist'
-if has("win32") | let g:grep = 'findstr /s /n /i' | endif
-command! -nargs=+ Grep cgetexpr system(g:grep . ' <args> '  . g:root_dir . '*') | copen
+let g:grep = 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=dist <args> ' . g:root_dir
+if has("win32") | let g:grep = 'findstr /s /n /i <args> "' . g:root_dir . '\*"' | endif
+command! -nargs=+ Grep cgetexpr system(g:grep) | copen
 
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 " end commands
