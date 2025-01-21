@@ -115,7 +115,7 @@ command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
 
 let g:grep = 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=dist'
 if has("win32") | let g:grep = 'findstr /s /n /i' | endif
-command! -nargs=+ Grep cgetexpr system(g:grep . ' <args> '  . g:root_dir) | copen
+command! -nargs=+ Grep cgetexpr system(g:grep . ' <args> '  . g:root_dir . '*') | copen
 
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 " end commands
