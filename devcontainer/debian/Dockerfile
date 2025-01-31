@@ -88,8 +88,8 @@ RUN curl -sLo go$GO_VERSION.linux-amd64.tar.gz "https://go.dev//dl/go$GO_VERSION
 # RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash -s -- -y
 
 # neovim release
-ARG NVIM_VERSION=0.10.0
-RUN curl -sLo nvim-linux64.tar.gz "https://github.com/neovim/neovim/releases/download/v$NVIM_VERSION/nvim-linux64.tar.gz" \
+ARG NVIM_VERSION=0.10.4
+RUN curl -sLo nvim-linux64.tar.gz "https://github.com/neovim/neovim/releases/download/v$NVIM_VERSION/nvim-linux-x86_64.tar.gz" \
   && tar xzf nvim-linux64.tar.gz \
   && ln -s $WORK_DIR/nvim-linux64/bin/nvim $DEST/nvim
 

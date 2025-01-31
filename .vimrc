@@ -60,7 +60,6 @@ nnoremap <silent><expr> <leader>- ":e " . g:root_dir . "<CR>"
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
 nnoremap <silent> <leader>dm :delmarks A-Z<CR>
-nnoremap <silent> <leader><c-w> :call WinMode()<CR>
 
 let g:root_dir = getcwd()
 augroup vimrc | autocmd!
@@ -88,19 +87,6 @@ function! MRUFiles(arg, ...)
 endfunction
 function! AllFiles(arg, ...)
     return Fuzzy(systemlist(g:findcmd)->map('substitute(v:val, "\r", "", "")'), a:arg)
-endfunction
-
-function! WinMode()
-    try
-        while 1
-            redraw | echohl ModeMsg | echo '-- WINMODE --'
-            let n = getchar()
-            if n == 27 | break | endif
-            exec 'normal ' . nr2char(23) . nr2char(n)
-        endwhile
-    finally
-        redraw! | echon ''
-    endtry
 endfunction
 " end functions
 
@@ -150,6 +136,9 @@ let g:coc_global_extensions = [
             \ 'coc-json',
             \ 'coc-yaml',
             \ 'coc-prettier',
+            \ 'coc-tsserver',
+            \ '@yaegassy/coc-volar',
+            \ '@yaegassy/coc-intelephense',
             \ ]
 
 inoremap <silent><expr> <TAB>
@@ -192,11 +181,7 @@ nmap <silent> ]d <Plug>(coc-diagnostic-next)
 nmap <silent> [d <Plug>(coc-diagnostic-prev)
 nmap <silent> <expr> [c &diff ? '[c' : '<Plug>(coc-git-prevchunk)'
 nmap <silent> <expr> ]c &diff ? ']c' : '<Plug>(coc-git-nextchunk)'
-nmap go <Plug>(coc-git-chunkinfo)
-omap ig <Plug>(coc-git-chunk-inner)
-xmap ig <Plug>(coc-git-chunk-inner)
 
 command! -nargs=0 Prettier CocCommand prettier.formatFile
-command! -nargs=? Fold :call CocAction('fold', <f-args>)
 
 autocmd Filetype vue setlocal iskeyword+=-
