@@ -116,6 +116,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 if !has('nvim')
     Plug 'markonm/traces.vim'
     Plug 'joshdick/onedark.vim'
@@ -128,6 +129,7 @@ call plug#end()
 
 nnoremap <silent> <leader>gs :G <CR>
 vnoremap <silent> gbb :TCommentBlock<CR>
+nnoremap <silent> <expr> <leader>sh ":FZF " . g:root_dir . "<CR>"
 
 " coc
 let g:coc_enable_locationlist = 0
