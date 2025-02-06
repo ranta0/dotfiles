@@ -99,20 +99,8 @@ if present then
       ["<C-Space>"] = cmp.mapping.complete({}),
       ["<C-c>"] = cmp.mapping.abort(),
       ["<CR>"] = cmp.mapping.confirm({ select = true }),
-      ["<Tab>"] = function(fallback)
-        if cmp.visible() then
-          cmp.select_next_item()
-        else
-          fallback()
-        end
-      end,
-      ["<S-Tab>"] = function(fallback)
-        if cmp.visible() then
-          cmp.select_prev_item()
-        else
-          fallback()
-        end
-      end,
+      ["<Tab>"] = cmp.mapping.select_next_item(),
+      ["<S-Tab>"] = cmp.mapping.select_prev_item(),
     }),
     sources = cmp.config.sources({
       { name = "nvim_lsp" },
@@ -120,13 +108,6 @@ if present then
     }, {
       { name = "buffer" },
     }),
-  })
-
-  cmp.setup.cmdline({ "/", "?" }, {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = {
-      { name = "buffer" },
-    },
   })
 end
 

@@ -67,7 +67,6 @@ RUN git clone $DOTFILES ~/dotfiles \
   && ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf \
   && ln -s ~/dotfiles/plug.lock ~/plug.lock \
   && mkdir -p ~/.vim/ \
-  && ln -s ~/dotfiles/.vim/coc-settings.json ~/.vim/coc-settings.json \
   && mkdir -p ~/.config/ \
   && ln -s ~/dotfiles/.config/nvim ~/.config/nvim
 
