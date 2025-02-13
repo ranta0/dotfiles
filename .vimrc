@@ -120,7 +120,6 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 if has('nvim')
     Plug 'navarasu/onedark.nvim'
     Plug 'nvim-treesitter/nvim-treesitter'
-    Plug 'stevearc/conform.nvim'
     Plug 'neovim/nvim-lspconfig'
     Plug 'williamboman/mason.nvim'
     Plug 'hrsh7th/nvim-cmp'

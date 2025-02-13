@@ -58,31 +58,6 @@ if present then
   })
 end
 
-present, _ = pcall(require, "conform")
-if present then
-  require("conform").setup({
-    format_on_save = {
-      timeout_ms = 500,
-      lsp_fallback = true,
-    },
-    formatters_by_ft = {
-      javascript = { "prettier" },
-      typescript = { "prettier" },
-      javascriptreact = { "prettier" },
-      typescriptreact = { "prettier" },
-      svelte = { "prettier" },
-      vue = { "prettier" },
-      css = { "prettier" },
-      html = { "prettier" },
-      json = { "prettier" },
-      yaml = { "prettier" },
-      markdown = { "prettier" },
-      lua = { "stylua" },
-      sh = { "shfmt" },
-    },
-  })
-end
-
 present, _ = pcall(require, "mason")
 if present then
   require("mason").setup()
@@ -196,3 +171,16 @@ if present then
     capabilities = capabilities,
   })
 end
+
+local mason_registry = require("mason-registry")
+local prettier_path = mason_registry.get_package("prettier"):get_install_path() .. "/node_modules/.bin/prettier"
+vim.api.nvim_create_user_command("Prettier", function()
+  vim.cmd("write")
+  vim.cmd("silent !" .. prettier_path .. " --write %")
+end, {})
+
+local stylua_path = mason_registry.get_package("stylua"):get_install_path() .. "/stylua"
+vim.api.nvim_create_user_command("Stylua", function()
+  vim.cmd("write")
+  vim.cmd("silent !" .. stylua_path .. " %")
+end, {})
