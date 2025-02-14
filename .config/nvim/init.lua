@@ -7,18 +7,14 @@ end
 
 present, _ = pcall(require, "nvim-treesitter")
 if present then
-  pcall(require("nvim-treesitter.install").update({ with_sync = true }))
   require("nvim-treesitter.configs").setup({
+    auto_install = true,
+    sync_install = true,
     highlight = {
       enable = true,
-      additional_vim_regex_highlighting = { "php" },
       disable = function(lang, bufnr)
         return lang == "javascript" and vim.api.nvim_buf_line_count(bufnr) > 50000
       end,
-    },
-    context_commentstring = {
-      enable = true,
-      enable_autocmd = false,
     },
     ensure_installed = {
       "vimdoc",
@@ -36,26 +32,14 @@ if present then
       "go",
       "bash",
     },
-    rainbow = {
-      enable = true,
-      disable = { "html" },
-      extended_mode = false,
-      max_file_lines = nil,
-    },
-    autotag = {
-      enable = true,
-    },
-    incremental_selection = {
-      enable = true,
-      keymaps = {
-        init_selection = "<c-space>",
-        node_incremental = "<c-space>",
-      },
-    },
-    indent = {
-      enable = true,
-    },
   })
+end
+
+present, _ = pcall(require, "mini.completion")
+if present then
+  require("mini.completion").setup()
+  vim.keymap.set("i", "<TAB>", [[pumvisible() ? "\<C-n>" : "\<Tab>"]], { expr = true, silent = false })
+  vim.keymap.set("i", "<S-TAB>", [[pumvisible() ? "\<C-p>" : "\<S-Tab>"]], { expr = true, silent = false })
 end
 
 present, _ = pcall(require, "mason")
@@ -63,27 +47,9 @@ if present then
   require("mason").setup()
 end
 
-present, _ = pcall(require, "cmp")
+present, _ = pcall(require, "mason-lspconfig")
 if present then
-  local cmp = require("cmp")
-
-  cmp.setup({
-    mapping = cmp.mapping.preset.insert({
-      ["<C-b>"] = cmp.mapping.scroll_docs(-4),
-      ["<C-f>"] = cmp.mapping.scroll_docs(4),
-      ["<C-Space>"] = cmp.mapping.complete({}),
-      ["<C-c>"] = cmp.mapping.abort(),
-      ["<CR>"] = cmp.mapping.confirm({ select = true }),
-      ["<Tab>"] = cmp.mapping.select_next_item(),
-      ["<S-Tab>"] = cmp.mapping.select_prev_item(),
-    }),
-    sources = cmp.config.sources({
-      { name = "nvim_lsp" },
-      { name = "nvim_lsp_signature_help" },
-    }, {
-      { name = "buffer" },
-    }),
-  })
+  require("mason-lspconfig").setup()
 end
 
 present, _ = pcall(require, "lspconfig")
@@ -108,78 +74,68 @@ if present then
   })
 
   local lspconfig = require("lspconfig")
-  local capabilities = require("cmp_nvim_lsp").default_capabilities()
+  local mason_lspconfig = require("mason-lspconfig")
+  mason_lspconfig.setup_handlers({
+    function(server_name)
+      require("lspconfig")[server_name].setup({})
+    end,
 
-  lspconfig.lua_ls.setup({
-    capabilities = capabilities,
-    settings = {
-      Lua = {
-        diagnostics = {
-          globals = { "vim", "it", "describe", "before_each", "after_each" },
+    ["intelephense"] = function()
+      lspconfig.intelephense.setup({
+        settings = {
+          intelephense = {
+            enviroment = { version = "8.3.0" },
+          },
         },
-        hint = { enable = true },
-      },
-    },
-  })
+      })
+    end,
 
-  local mason_registry = require("mason-registry")
-  local vue_language_server_path = mason_registry.get_package("vue-language-server"):get_install_path() .. "/node_modules/@vue/language-server"
-  lspconfig.ts_ls.setup({
-    capabilities = capabilities,
-    init_options = {
-      plugins = {
-        {
-          name = "@vue/typescript-plugin",
-          location = vue_language_server_path,
-          languages = { "vue" },
+    ["ts_ls"] = function()
+      lspconfig.ts_ls.setup({
+        init_options = {
+          plugins = {
+            {
+              name = "@vue/typescript-plugin",
+              location = require("mason-registry").get_package("vue-language-server"):get_install_path() .. "/node_modules/@vue/language-server",
+              languages = { "vue" },
+            },
+          },
         },
-      },
-    },
-    single_file_support = true,
-    completions = {
-      completeFunctionCalls = true,
-    },
-    filetypes = {
-      "javascript",
-      "typescript",
-      "javascriptreact",
-      "typescriptreact",
-      "jsx",
-      "tsx",
-      "vue",
-    },
-  })
+        single_file_support = true,
+        completions = {
+          completeFunctionCalls = true,
+        },
+        filetypes = {
+          "javascript",
+          "typescript",
+          "javascriptreact",
+          "typescriptreact",
+          "jsx",
+          "tsx",
+          "vue",
+        },
+      })
+    end,
 
-  lspconfig.intelephense.setup({
-    capabilities = capabilities,
-    settings = {
-      intelephense = {
-        enviroment = { version = "8.3.0" },
-      },
-    },
-  })
-
-  lspconfig.jsonls.setup({
-    capabilities = capabilities,
-  })
-
-  lspconfig.rust_analyzer.setup({
-    capabilities = capabilities,
-  })
-
-  lspconfig.gopls.setup({
-    capabilities = capabilities,
+    ["lua_ls"] = function()
+      lspconfig.lua_ls.setup({
+        settings = {
+          Lua = {
+            diagnostics = { globals = { "vim" } },
+          },
+        },
+      })
+    end,
   })
 end
 
-local mason_registry = require("mason-registry")
-local prettier_path = mason_registry.get_package("prettier"):get_install_path() .. "/node_modules/.bin/prettier"
+local prettier_path = vim.fn.stdpath("data") .. "/mason/bin/prettier"
 vim.api.nvim_create_user_command("Prettier", function()
   vim.cmd("write")
   vim.cmd("silent !" .. prettier_path .. " --write %")
 end, {})
 
-local stylua_path = mason_registry.get_package("stylua"):get_install_path() .. "/stylua"
+local stylua_path = vim.fn.stdpath("data") .. "/mason/bin/stylua"
 vim.api.nvim_create_user_command("Stylua", function()
   vim.cmd("write")
   vim.cmd("silent !" .. stylua_path .. " %")

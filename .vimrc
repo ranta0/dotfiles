@@ -119,13 +119,11 @@ Plug 'tomtom/tcomment_vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 if has('nvim')
     Plug 'navarasu/onedark.nvim'
-    Plug 'nvim-treesitter/nvim-treesitter'
-    Plug 'neovim/nvim-lspconfig'
+    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
     Plug 'williamboman/mason.nvim'
-    Plug 'hrsh7th/nvim-cmp'
-    Plug 'hrsh7th/cmp-nvim-lsp'
-    Plug 'hrsh7th/cmp-nvim-lsp-signature-help'
-    Plug 'hrsh7th/cmp-buffer'
+    Plug 'williamboman/mason-lspconfig.nvim/'
+    Plug 'neovim/nvim-lspconfig'
+    Plug 'echasnovski/mini.completion'
 endif
 call plug#end()
 
