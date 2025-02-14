@@ -16,6 +16,9 @@ if present then
         return lang == "javascript" and vim.api.nvim_buf_line_count(bufnr) > 50000
       end,
     },
+    indent = {
+      enable = true
+    },
     ensure_installed = {
       "vimdoc",
       "markdown",
