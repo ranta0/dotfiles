@@ -124,6 +124,7 @@ if has('nvim')
     Plug 'williamboman/mason-lspconfig.nvim/'
     Plug 'neovim/nvim-lspconfig'
     Plug 'echasnovski/mini.completion'
+    Plug 'stevearc/oil.nvim'
 endif
 call plug#end()
 

@@ -15,6 +15,7 @@ if present then
       disable = function(lang, bufnr)
         return lang == "javascript" and vim.api.nvim_buf_line_count(bufnr) > 50000
       end,
+      additional_vim_regex_highlighting = { "php" }
     },
     indent = {
       enable = true
@@ -36,6 +37,16 @@ if present then
       "bash",
     },
   })
+end
+
+present, _ = pcall(require, "oil")
+if present then
+  require("oil").setup({
+    view_options = {
+      show_hidden = true
+    }
+  })
+  vim.keymap.set("n", "-", [[<CMD>Oil<CR>]], { silent = false })
 end
 
 present, _ = pcall(require, "mini.completion")
