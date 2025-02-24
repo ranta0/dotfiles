@@ -15,10 +15,10 @@ if present then
       disable = function(lang, bufnr)
         return lang == "javascript" and vim.api.nvim_buf_line_count(bufnr) > 50000
       end,
-      additional_vim_regex_highlighting = { "php" }
+      additional_vim_regex_highlighting = { "php" },
     },
     indent = {
-      enable = true
+      enable = true,
     },
     ensure_installed = {
       "vimdoc",
@@ -43,8 +43,8 @@ present, _ = pcall(require, "oil")
 if present then
   require("oil").setup({
     view_options = {
-      show_hidden = true
-    }
+      show_hidden = true,
+    },
   })
   vim.keymap.set("n", "-", [[<CMD>Oil<CR>]], { silent = false })
 end
@@ -141,6 +141,8 @@ if present then
       })
     end,
   })
+
+  lspconfig.gdscript.setup({})
 end
 
 local prettier_path = vim.fn.stdpath("data") .. "/mason/bin/prettier"
