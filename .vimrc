@@ -117,6 +117,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'mbbill/undotree'
 if has('nvim')
     Plug 'navarasu/onedark.nvim'
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
@@ -125,11 +126,14 @@ if has('nvim')
     Plug 'neovim/nvim-lspconfig'
     Plug 'echasnovski/mini.completion'
     Plug 'stevearc/oil.nvim'
+    Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 endif
 call plug#end()
 
+nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
 nnoremap <silent> <leader>gs :G <CR>
 vnoremap <silent> gbb :TCommentBlock<CR>
-nnoremap <silent> <expr> <leader>sh ":FZF " . g:root_dir . "<CR>"
+nnoremap <silent> <expr> <leader>sh ":FZF -i " . g:root_dir . "<CR>"
+nnoremap <silent> <leader>u :UndotreeToggle<CR>:UndotreeFocus<CR>
 nmap ]c <Plug>(GitGutterNextHunk)
 nmap [c <Plug>(GitGutterPrevHunk)

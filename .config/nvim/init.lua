@@ -12,8 +12,8 @@ if present then
     sync_install = true,
     highlight = {
       enable = true,
-      disable = function(lang, bufnr)
-        return lang == "javascript" and vim.api.nvim_buf_line_count(bufnr) > 50000
+      disable = function(_, bufnr)
+        return vim.fn.getfsize(vim.api.nvim_buf_get_name(bufnr)) > 1024 * 1024 * 1.5
       end,
       additional_vim_regex_highlighting = { "php" },
     },
@@ -145,14 +145,14 @@ if present then
   lspconfig.gdscript.setup({})
 end
 
-local prettier_path = vim.fn.stdpath("data") .. "/mason/bin/prettier"
-vim.api.nvim_create_user_command("Prettier", function()
-  vim.cmd("write")
-  vim.cmd("silent !" .. prettier_path .. " --write %")
-end, {})
-
-local stylua_path = vim.fn.stdpath("data") .. "/mason/bin/stylua"
-vim.api.nvim_create_user_command("Stylua", function()
-  vim.cmd("write")
-  vim.cmd("silent !" .. stylua_path .. " %")
-end, {})
+local formatters = {
+  Prettier = "prettier --write",
+  Stylua = "stylua",
+}
+local mason_path = vim.fn.stdpath("data") .. "/mason/bin/"
+for formatter, cmd in pairs(formatters) do
+  vim.api.nvim_create_user_command(formatter, function()
+    vim.cmd("write")
+    vim.cmd("silent !" .. mason_path .. cmd .. " %")
+  end, {})
+end
