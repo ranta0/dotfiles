@@ -43,6 +43,7 @@ nnoremap ,r :Scratch<CR>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap Q <nop>
 nnoremap gQ <nop>
+nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
 cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
 for ch in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     exe $'nnoremap <silent> m{tolower(ch)} m{ch}'
@@ -51,10 +52,9 @@ endfor
 
 let mapleader = " "
 nmap <silent> <leader>/ :let @/ = ""<CR>
-nnoremap <leader>sh :AllFiles <space>
-nnoremap <leader>? :MRUFiles <space>
+nnoremap <leader>sh :Files<CR>
+nnoremap <leader>? :OldFiles<CR>
 nnoremap <leader><leader> :b <space>
-nnoremap <silent> <expr> <leader>jsh ":Scratch<CR>:%!" . g:findcmd . "<CR><CR>"
 nnoremap <silent> - :Ex<CR>
 nnoremap <silent><expr> <leader>- ":e " . g:root_dir . "<CR>"
 xnoremap <leader>y "+y
@@ -65,42 +65,18 @@ let g:root_dir = getcwd()
 augroup vimrc | autocmd!
     autocmd BufEnter * if &filetype !=# 'netrw' | exec "lcd " . g:root_dir | endif
     autocmd filetype netrw hi! link netrwMarkFile ErrorMsg
+    autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>
 augroup end
 let g:netrw_keepdir = 0
 let g:netrw_localcopydircmd = 'cp -r'
-
-" functions
-let g:findcmd = 'find ' . g:root_dir . ' -type f -not -path "*vendor*/*" -not -path "*node_modules*/*" -not -path "*dist*/*"'
-if has("win32") | let g:findcmd = 'dir /s /b /a-d ' . g:root_dir | endif
-
-function! Fuzzy(files, search)
-    let files = a:files->map('fnamemodify(v:val, ":~:.")')
-    if empty(a:search) | return a:files | endif
-    if v:version < 900
-        return copy(a:files)->filter('v:val =~ a:search')
-    else
-        return matchfuzzy(a:files, a:search)
-    endif
-endfunction
-function! MRUFiles(arg, ...)
-    return Fuzzy(copy(v:oldfiles)->filter('filereadable(fnamemodify(v:val, ":p"))'), a:arg)
-endfunction
-function! AllFiles(arg, ...)
-    return Fuzzy(systemlist(g:findcmd)->map('substitute(v:val, "\r", "", "")'), a:arg)
-endfunction
-" end functions
 
 " commands
 command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 | file scratch | endif
 
-command! -nargs=1 -complete=customlist,MRUFiles MRUFiles edit <args>
-command! -nargs=1 -complete=customlist,AllFiles AllFiles edit <args>
-
-let g:grep = 'grep -rnH --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=vendor --exclude-dir=dist'
-let g:grep_dir = g:root_dir
-if has("win32") | let g:grep = 'findstr /s /n /i' | let g:grep_dir = '"'.g:root_dir.'\*"' | endif
-command! -nargs=+ Grep cgetexpr system(g:grep . ' <args> ' . g:grep_dir) | copen
+command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
+command! -nargs=0 Files cgetexpr map(systemlist('git ls-files -co --exclude-standard'), 'v:val . ":1:0"') | copen
+command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
 
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 " end commands
@@ -130,7 +106,6 @@ if has('nvim')
 endif
 call plug#end()
 
-nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
 nnoremap <silent> <leader>gs :G <CR>
 vnoremap <silent> gbb :TCommentBlock<CR>
 nnoremap <silent> <expr> <leader>sh ":FZF -i " . g:root_dir . "<CR>"
