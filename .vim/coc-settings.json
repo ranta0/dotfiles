@@ -1,0 +1,27 @@
+{
+  "suggest.noselect": true,
+  "semanticTokens.enable": true,
+  "coc.preferences.useQuickfixForLocations": true,
+  "coc.preferences.promptInput": false,
+  "coc.preferences.enableMessageDialog": true,
+  "intelephense.client.disableSnippetsCompletion": true,
+  "git.branchCharacter": "",
+  "suggest.snippetsSupport": false,
+  "languageserver": {
+    "golang": {
+      "command": "gopls",
+      "rootPatterns": ["go.mod"],
+      "filetypes": ["go"]
+    },
+    "rust": {
+      "command": "rust-analyzer",
+      "filetypes": ["rust"],
+      "rootPatterns": ["Cargo.toml"]
+    },
+    "godot": {
+      "host": "127.0.0.1",
+      "filetypes": ["gd", "gdscript", "gdscript3"],
+      "port": 6005
+    }
+  }
+}

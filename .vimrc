@@ -21,14 +21,10 @@ let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 set background=dark termguicolors
 colorscheme habamax
 
-nnoremap k gk
-nnoremap j gj
-vnoremap k gk
-vnoremap j gj
-nnoremap <C-d> <C-d>zz
-nnoremap <C-u> <C-u>zz
-vnoremap <C-d> <C-d>zz
-vnoremap <C-u> <C-u>zz
+noremap k gk
+noremap j gj
+noremap <C-d> <C-d>zz
+noremap <C-u> <C-u>zz
 nnoremap n nzzzv
 nnoremap N Nzzzv
 vnoremap <silent> > >gv
@@ -89,7 +85,6 @@ endif
 
 call plug#begin()
 Plug 'tpope/vim-fugitive'
-Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
@@ -103,6 +98,8 @@ if has('nvim')
     Plug 'echasnovski/mini.completion'
     Plug 'stevearc/oil.nvim'
     Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
+else
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
 endif
 call plug#end()
 
@@ -110,5 +107,63 @@ nnoremap <silent> <leader>gs :G <CR>
 vnoremap <silent> gbb :TCommentBlock<CR>
 nnoremap <silent> <expr> <leader>sh ":FZF -i " . g:root_dir . "<CR>"
 nnoremap <silent> <leader>u :UndotreeToggle<CR>:UndotreeFocus<CR>
-nmap ]c <Plug>(GitGutterNextHunk)
-nmap [c <Plug>(GitGutterPrevHunk)
+
+" coc
+if !has('nvim')
+    let g:coc_enable_locationlist = 0
+    let g:coc_global_extensions = [
+                \ 'coc-git',
+                \ 'coc-json',
+                \ 'coc-yaml',
+                \ 'coc-prettier',
+                \ ]
+
+    inoremap <silent><expr> <TAB>
+                \ coc#pum#visible() ? coc#pum#next(1) :
+                \ CheckBackspace() ? "\<Tab>" :
+                \ coc#refresh()
+    inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+    inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+    function! CheckBackspace() abort
+        let col = col('.') - 1
+        return !col || getline('.')[col - 1]  =~# '\s'
+    endfunction
+    inoremap <silent><expr> <c-@> coc#refresh()
+
+    nmap <silent> <leader>gd <Plug>(coc-definition)
+    nmap <silent> <leader>gy <Plug>(coc-type-definition)
+    nmap <silent> <leader>gi <Plug>(coc-implementation)
+    nmap <silent> <leader>gr <Plug>(coc-references)
+    nmap <silent> <leader>ca <Plug>(coc-codeaction-refactor)
+    nmap <silent> <leader>mf :call CocActionAsync('format')<CR>
+    nmap <leader>rn <Plug>(coc-rename)
+    xmap <leader>a  <Plug>(coc-codeaction-selected)
+    nmap <leader>a  <Plug>(coc-codeaction-selected)
+
+    nnoremap <silent> K :call CocActionAsync('doHover')<CR>
+    nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+    nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+    inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<CR>" : "\<Right>"
+    inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<CR>" : "\<Left>"
+    vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+    vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+
+    nnoremap <silent><nowait> <leader>td  :<C-u>CocList diagnostics<CR>
+    nnoremap <silent><nowait> <leader>o   :<C-u>CocList -A outline -kind<CR>
+    nnoremap <silent><nowait> <leader>w   :<C-u>CocList -I -N symbols<CR>
+
+    nmap <silent> ]d <Plug>(coc-diagnostic-next)
+    nmap <silent> [d <Plug>(coc-diagnostic-prev)
+    nmap <silent> <expr> [c &diff ? '[c' : '<Plug>(coc-git-prevchunk)'
+    nmap <silent> <expr> ]c &diff ? ']c' : '<Plug>(coc-git-nextchunk)'
+    nmap go <Plug>(coc-git-chunkinfo)
+    omap ig <Plug>(coc-git-chunk-inner)
+    xmap ig <Plug>(coc-git-chunk-inner)
+
+    command! -nargs=0 Prettier CocCommand prettier.formatFile
+    command! -nargs=? Fold :call CocAction('fold', <f-args>)
+
+    autocmd Filetype vue setlocal iskeyword+=-
+endif
