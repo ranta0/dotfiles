@@ -62,6 +62,7 @@ augroup vimrc | autocmd!
     autocmd BufEnter * if &filetype !=# 'netrw' | exec "lcd " . g:root_dir | endif
     autocmd filetype netrw hi! link netrwMarkFile ErrorMsg
     autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>
+    autocmd Syntax * syntax sync fromstart
 augroup end
 let g:netrw_keepdir = 0
 let g:netrw_localcopydircmd = 'cp -r'
@@ -73,13 +74,16 @@ command! Scratch if bufexists('scratch') | buffer scratch | else
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
 command! -nargs=0 Files cgetexpr map(systemlist('git ls-files -co --exclude-standard'), 'v:val . ":1:0"') | copen
 command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
+if executable('rg')
+    command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
+endif
 
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 " end commands
 
 let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
 if empty(glob(data_dir . '/autoload/plug.vim'))
-    silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
     autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
@@ -100,6 +104,7 @@ if has('nvim')
     Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
 else
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
+    Plug 'joshdick/onedark.vim'
 endif
 call plug#end()
 
@@ -110,12 +115,16 @@ nnoremap <silent> <leader>u :UndotreeToggle<CR>:UndotreeFocus<CR>
 
 " coc
 if !has('nvim')
+    " screenshare mode
+    nnoremap <silent> <leader>s :set cuc cul<CR>:colo onedark<CR>
+
     let g:coc_enable_locationlist = 0
     let g:coc_global_extensions = [
                 \ 'coc-git',
                 \ 'coc-json',
                 \ 'coc-yaml',
                 \ 'coc-prettier',
+                \ 'coc-explorer',
                 \ ]
 
     inoremap <silent><expr> <TAB>
@@ -164,6 +173,7 @@ if !has('nvim')
 
     command! -nargs=0 Prettier CocCommand prettier.formatFile
     command! -nargs=? Fold :call CocAction('fold', <f-args>)
+    nnoremap <silent> <expr> <leader>- ":CocCommand explorer " . g:root_dir . "<CR>"
 
     autocmd Filetype vue setlocal iskeyword+=-
 endif
