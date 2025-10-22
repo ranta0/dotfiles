@@ -3,10 +3,7 @@
   "semanticTokens.enable": true,
   "coc.preferences.useQuickfixForLocations": true,
   "coc.preferences.promptInput": false,
-  "coc.preferences.enableMessageDialog": true,
   "intelephense.client.disableSnippetsCompletion": true,
-  "explorer.width": 100,
-  "git.branchCharacter": "",
   "suggest.snippetsSupport": false,
   "languageserver": {
     "golang": {

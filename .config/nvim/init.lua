@@ -1,4 +1,4 @@
-vim.cmd.source("~/.vimrc")
+vim.cmd.source("~/.vimrc_legacy")
 
 local present, _ = pcall(require, "onedark")
 if present then

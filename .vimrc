@@ -2,16 +2,11 @@ filetype plugin indent on
 syntax enable
 
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf-8,latin
-set nowrap tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
-set rnu nu nohidden autoread hlsearch incsearch
-set list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-set showcmd noruler showmode laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
-set path=.,, wildmenu wildignore=*.~,*.?~,*.o,*.sw?,*.bak,*.hi,*.pyc,*.out suffixes=*.pdf
-set updatetime=50 lazyredraw ttyfast ttimeoutlen=50
-if v:version >= 900 | set wildoptions=pum | endif
-if has('nvim') | set inccommand=split | endif
-
-let $UNDO_DATA = (has('nvim') ? $HOME . '/.vim/undodir' : $HOME . '/.vim/undo')
+set nohidden autoread hlsearch incsearch list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
+set nowrap showmode laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
+set path=.,, wildmenu wildoptions=pum updatetime=50 lazyredraw ttyfast ttimeoutlen=50
+set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
+let $UNDO_DATA = $HOME . '/.vim/undo'
 set undodir=$UNDO_DATA undofile nobackup noswapfile
 
 let &t_SI = "\<Esc>[6 q"
@@ -23,16 +18,6 @@ colorscheme habamax
 
 noremap k gk
 noremap j gj
-noremap <C-d> <C-d>zz
-noremap <C-u> <C-u>zz
-nnoremap n nzzzv
-nnoremap N Nzzzv
-vnoremap <silent> > >gv
-vnoremap <silent> < <gv
-vnoremap $ $h
-nnoremap ]q :cn<CR>
-nnoremap [q :cp<CR>
-nnoremap ,n :set rnu! nu! rnu?<CR>
 nnoremap ,w :set wrap! wrap?<CR>
 nnoremap ,p :set paste! paste?<CR>
 nnoremap ,r :Scratch<CR>
@@ -52,20 +37,15 @@ nnoremap <leader>sh :Files<CR>
 nnoremap <leader>? :OldFiles<CR>
 nnoremap <leader><leader> :b <space>
 nnoremap <silent> - :Ex<CR>
-nnoremap <silent><expr> <leader>- ":e " . g:root_dir . "<CR>"
+nnoremap <silent> <leader>- :e .<CR>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
-nnoremap <silent> <leader>dm :delmarks A-Z<CR>
+nnoremap <silent> <leader>md :delmarks A-Z<CR>
 
-let g:root_dir = getcwd()
 augroup vimrc | autocmd!
-    autocmd BufEnter * if &filetype !=# 'netrw' | exec "lcd " . g:root_dir | endif
-    autocmd filetype netrw hi! link netrwMarkFile ErrorMsg
     autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>
     autocmd Syntax * syntax sync fromstart
 augroup end
-let g:netrw_keepdir = 0
-let g:netrw_localcopydircmd = 'cp -r'
 
 " commands
 command! Scratch if bufexists('scratch') | buffer scratch | else
@@ -78,10 +58,42 @@ if executable('rg')
     command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
 endif
 
+" Build a regex pattern that matches groups separated by custom delimiters.
+" Usage:
+"   :RegexGroups 3, 2-
+" Produces a pattern like: v^([^,]*,[^,]*,[^,]*),([^-]*-[^-]*)-(.*)
+function! RegexGroups(...)
+    let search = ""
+    let max = 1
+    for attr in a:000
+        if max >= 9
+            echoerr "too many args"
+            break
+        endif
+        let number = matchstr(attr, '\v(\d+)')
+        let delimiter = substitute(attr, '\v(\d+)', '', 'g')
+        let matchable = '[^' . delimiter . ']*'
+        let group = matchable
+        if number != ''
+            for i in range(1, number - 1)
+                let group .= delimiter . matchable
+            endfor
+        endif
+        let searchable = '(' . group . ')' . delimiter
+        let max += 1
+        let search .= searchable
+    endfor
+    if max <= 9
+        let @/ = '\v^' . search . '(.*)'
+    endif
+endfunction
+
+command! -nargs=+ RegexGroups call RegexGroups(<f-args>)
+
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 " end commands
 
-let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+let data_dir = '~/.vim'
 if empty(glob(data_dir . '/autoload/plug.vim'))
     silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
     autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
@@ -93,87 +105,73 @@ Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'mbbill/undotree'
-if has('nvim')
-    Plug 'navarasu/onedark.nvim'
-    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-    Plug 'williamboman/mason.nvim'
-    Plug 'williamboman/mason-lspconfig.nvim/'
-    Plug 'neovim/nvim-lspconfig'
-    Plug 'echasnovski/mini.completion'
-    Plug 'stevearc/oil.nvim'
-    Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() }, 'for': ['markdown', 'vim-plug']}
-else
-    Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    Plug 'joshdick/onedark.vim'
-endif
+Plug 'lambdalisue/vim-fern'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'joshdick/onedark.vim'
 call plug#end()
 
 nnoremap <silent> <leader>gs :G <CR>
 vnoremap <silent> gbb :TCommentBlock<CR>
-nnoremap <silent> <expr> <leader>sh ":FZF -i " . g:root_dir . "<CR>"
+nnoremap <silent> <leader>sh :FZF -i <CR>
 nnoremap <silent> <leader>u :UndotreeToggle<CR>:UndotreeFocus<CR>
+nnoremap <silent> <leader>S :set cuc cul nu<CR>:colo onedark<CR>
+nnoremap - :Fern %:h<CR>
+nnoremap <silent> <leader>- :Fern .<CR>
+
+let g:fern#hide_cursor = 1
+let g:fern#default_hidden = 1
+augroup fern | autocmd!
+    autocmd FileType fern nmap <buffer> - <Plug>(fern-action-leave)
+    autocmd FileType fern nmap <buffer> <TAB> <Plug>(fern-action-mark)
+    autocmd FileType fern nmap <buffer> % <Plug>(fern-action-new-file)
+    autocmd FileType fern nmap <buffer> d <Plug>(fern-action-new-dir)
+    autocmd FileType fern nmap <buffer> D <Plug>(fern-action-remove)
+augroup end
 
 " coc
-if !has('nvim')
-    " screenshare mode
-    nnoremap <silent> <leader>s :set cuc cul<CR>:colo onedark<CR>
+let g:coc_enable_locationlist = 0
+let g:coc_global_extensions = [
+            \ 'coc-json',
+            \ 'coc-yaml',
+            \ 'coc-prettier',
+            \ ]
 
-    let g:coc_enable_locationlist = 0
-    let g:coc_global_extensions = [
-                \ 'coc-git',
-                \ 'coc-json',
-                \ 'coc-yaml',
-                \ 'coc-prettier',
-                \ 'coc-explorer',
-                \ ]
+inoremap <silent><expr> <TAB>
+            \ coc#pum#visible() ? coc#pum#next(1) :
+            \ CheckBackspace() ? "\<Tab>" :
+            \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+            \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
-    inoremap <silent><expr> <TAB>
-                \ coc#pum#visible() ? coc#pum#next(1) :
-                \ CheckBackspace() ? "\<Tab>" :
-                \ coc#refresh()
-    inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
-    inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
-                \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+function! CheckBackspace() abort
+    let col = col('.') - 1
+    return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+inoremap <silent><expr> <c-@> coc#refresh()
 
-    function! CheckBackspace() abort
-        let col = col('.') - 1
-        return !col || getline('.')[col - 1]  =~# '\s'
-    endfunction
-    inoremap <silent><expr> <c-@> coc#refresh()
+nmap <silent> <leader>gd <Plug>(coc-definition)
+nmap <silent> <leader>gy <Plug>(coc-type-definition)
+nmap <silent> <leader>gi <Plug>(coc-implementation)
+nmap <silent> <leader>gr <Plug>(coc-references)
+nmap <silent> <leader>ca <Plug>(coc-codeaction-refactor)
+nmap <silent> <leader>mf :call CocActionAsync('format')<CR>
+nmap <leader>rn <Plug>(coc-rename)
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <silent> ]d <Plug>(coc-diagnostic-next)
+nmap <silent> [d <Plug>(coc-diagnostic-prev)
+nnoremap <silent><nowait> <leader>td  :<C-u>CocList diagnostics<CR>
 
-    nmap <silent> <leader>gd <Plug>(coc-definition)
-    nmap <silent> <leader>gy <Plug>(coc-type-definition)
-    nmap <silent> <leader>gi <Plug>(coc-implementation)
-    nmap <silent> <leader>gr <Plug>(coc-references)
-    nmap <silent> <leader>ca <Plug>(coc-codeaction-refactor)
-    nmap <silent> <leader>mf :call CocActionAsync('format')<CR>
-    nmap <leader>rn <Plug>(coc-rename)
-    xmap <leader>a  <Plug>(coc-codeaction-selected)
-    nmap <leader>a  <Plug>(coc-codeaction-selected)
+nnoremap <silent> K :call CocActionAsync('doHover')<CR>
+nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<CR>" : "\<Right>"
+inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<CR>" : "\<Left>"
+vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
+vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
 
-    nnoremap <silent> K :call CocActionAsync('doHover')<CR>
-    nnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-    nnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
-    inoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(1)\<CR>" : "\<Right>"
-    inoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? "\<c-r>=coc#float#scroll(0)\<CR>" : "\<Left>"
-    vnoremap <silent><nowait><expr> <C-f> coc#float#has_scroll() ? coc#float#scroll(1) : "\<C-f>"
-    vnoremap <silent><nowait><expr> <C-b> coc#float#has_scroll() ? coc#float#scroll(0) : "\<C-b>"
+command! -nargs=0 Prettier CocCommand prettier.formatFile
 
-    nnoremap <silent><nowait> <leader>td  :<C-u>CocList diagnostics<CR>
-    nnoremap <silent><nowait> <leader>o   :<C-u>CocList -A outline -kind<CR>
-    nnoremap <silent><nowait> <leader>w   :<C-u>CocList -I -N symbols<CR>
+autocmd Filetype vue setlocal iskeyword+=-
 
-    nmap <silent> ]d <Plug>(coc-diagnostic-next)
-    nmap <silent> [d <Plug>(coc-diagnostic-prev)
-    nmap <silent> <expr> [c &diff ? '[c' : '<Plug>(coc-git-prevchunk)'
-    nmap <silent> <expr> ]c &diff ? ']c' : '<Plug>(coc-git-nextchunk)'
-    nmap go <Plug>(coc-git-chunkinfo)
-    omap ig <Plug>(coc-git-chunk-inner)
-    xmap ig <Plug>(coc-git-chunk-inner)
-
-    command! -nargs=0 Prettier CocCommand prettier.formatFile
-    command! -nargs=? Fold :call CocAction('fold', <f-args>)
-    nnoremap <silent> <expr> <leader>- ":CocCommand explorer " . g:root_dir . "<CR>"
-
-    autocmd Filetype vue setlocal iskeyword+=-
-endif
