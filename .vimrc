@@ -106,8 +106,8 @@ hi Folded       ctermbg=235 ctermfg=245 guibg=#1e2132 guifg=#686f9a
 hi Normal       ctermbg=234 ctermfg=252 guibg=#161821 guifg=#c6c8d1
 hi Comment      ctermfg=242 guifg=#6b7089
 hi MatchParen   ctermfg=203 ctermbg=NONE cterm=underline guifg=#ff6541 guibg=NONE gui=underline
-hi Search       ctermfg=231 ctermbg=173 cterm=NONE guifg=#f8f8f0 guibg=#d7875f gui=NONE
-hi IncSearch    ctermfg=231 ctermbg=197 cterm=NONE guifg=#f8f8f0 guibg=#f92672 gui=NONE
+hi Search       ctermfg=231 ctermbg=197 cterm=NONE guifg=#f8f8f0 guibg=#f92672 gui=NONE
+hi IncSearch    ctermfg=231 ctermbg=197 cterm=underline guifg=#f8f8f0 guibg=#f92672 gui=underline
 hi! link EndOfBuffer Normal
 hi! link SignColumn Normal
 hi! link Pmenu Visual
