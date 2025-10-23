@@ -13,7 +13,8 @@ let &t_SI = "\<Esc>[6 q"
 let &t_EI = "\<Esc>[2 q"
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-set background=dark termguicolors
+set t_Co=256
+set background=light termguicolors
 colorscheme slate
 
 noremap k gk
@@ -94,19 +95,20 @@ command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps ex
 " end commands
 
 " colors
-hi Cursor       cterm=NONE guifg=#2b3e50 guibg=#f8f8f2
-hi Visual       ctermfg=NONE ctermbg=16 cterm=NONE guifg=NONE guibg=#19242f gui=NONE
-hi VertSplit    ctermfg=60 ctermbg=60 cterm=NONE guifg=#66747f guibg=#66747f gui=NONE
+hi Cursor       ctermfg=234 ctermbg=252 guibg=#c6c8d1 guifg=#161821
+hi Visual       ctermfg=NONE ctermbg=236 cterm=NONE guibg=#272c42 guifg=NONE
+hi VertSplit    ctermbg=233 ctermfg=233 cterm=NONE guibg=#0f1117 guifg=#0f1117 gui=NONE
+hi StatusLine   ctermbg=234 ctermfg=245 cterm=reverse guibg=#17171b guifg=#818596 gui=reverse term=reverse
+hi StatusLineNC ctermbg=238 ctermfg=233 cterm=reverse guibg=#3e445e guifg=#0f1117 gui=reverse
+hi PmenuSel     ctermbg=240 ctermfg=255 guibg=#5b6389 guifg=#eff0f4
+hi Directory    ctermfg=109 guifg=#89b8c2
+hi Folded       ctermbg=235 ctermfg=245 guibg=#1e2132 guifg=#686f9a
+hi Normal       ctermbg=234 ctermfg=252 guibg=#161821 guifg=#c6c8d1
+hi Comment      ctermfg=242 guifg=#6b7089
 hi MatchParen   ctermfg=203 ctermbg=NONE cterm=underline guifg=#ff6541 guibg=NONE gui=underline
-hi StatusLine   ctermfg=231 ctermbg=60 cterm=bold guifg=#f8f8f2 guibg=#66747f gui=bold
-hi StatusLineNC ctermfg=231 ctermbg=60 cterm=NONE guifg=#f8f8f2 guibg=#66747f gui=NONE
-hi PmenuSel     ctermfg=NONE ctermbg=60 cterm=NONE guifg=NONE guibg=#66747f gui=NONE
-hi Directory    ctermfg=177 ctermbg=NONE cterm=NONE guifg=#ca94ff guibg=NONE gui=NONE
-hi Folded       ctermfg=68 ctermbg=23 cterm=NONE guifg=#5c98cd guibg=#2b3e50 gui=NONE
-hi Normal       ctermfg=231 ctermbg=NONE cterm=NONE guifg=#f8f8f2 guibg=#2b3e50 gui=NONE
-hi Comment      ctermfg=44 ctermbg=NONE cterm=NONE guifg=#5c98cd guibg=NONE gui=NONE
 hi Search       ctermfg=231 ctermbg=173 cterm=NONE guifg=#f8f8f0 guibg=#d7875f gui=NONE
 hi IncSearch    ctermfg=231 ctermbg=197 cterm=NONE guifg=#f8f8f0 guibg=#f92672 gui=NONE
+hi! link EndOfBuffer Normal
 hi! link SignColumn Normal
 hi! link Pmenu Visual
 hi! link PmenuThumb Search
