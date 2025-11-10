@@ -2,8 +2,8 @@ filetype plugin indent on
 syntax enable
 
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf-8,latin
-set nohidden autoread hlsearch incsearch list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-set nowrap showmode laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
+set nohidden autoread hlsearch incsearch list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|\ \ \ ,
+set nowrap showcmd showmode laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 set path=.,, wildmenu wildoptions=pum updatetime=50 lazyredraw ttyfast ttimeoutlen=50
 set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
 let $UNDO_DATA = $HOME . '/.vim/undo'
@@ -27,10 +27,6 @@ nnoremap Q <nop>
 nnoremap gQ <nop>
 nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
 cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
-for ch in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    exe $'nnoremap <silent> m{tolower(ch)} m{ch}'
-    exe $"nnoremap <silent> '{tolower(ch)} `{ch}"
-endfor
 
 let mapleader = " "
 nmap <silent> <leader>/ :let @/ = ""<CR>
@@ -41,11 +37,11 @@ nnoremap <silent> - :Ex<CR>
 nnoremap <silent> <leader>- :e .<CR>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
-nnoremap <silent> <leader>md :delmarks A-Z<CR>
 
 augroup vimrc | autocmd!
     autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>
     autocmd Syntax * syntax sync fromstart
+    autocmd OptionSet shiftwidth let &lcs = 'tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:|' . repeat(' ', &sw - 1)
 augroup end
 
 " commands
@@ -108,6 +104,7 @@ hi Comment      ctermfg=242 guifg=#6b7089
 hi MatchParen   ctermfg=203 ctermbg=NONE cterm=underline guifg=#ff6541 guibg=NONE gui=underline
 hi Search       ctermfg=231 ctermbg=197 cterm=NONE guifg=#f8f8f0 guibg=#f92672 gui=NONE
 hi IncSearch    ctermfg=231 ctermbg=197 cterm=underline guifg=#f8f8f0 guibg=#f92672 gui=underline
+hi SpecialKey   ctermfg=240 ctermbg=NONE cterm=NONE guifg=#585858 guibg=NONE gui=NONE
 hi! link EndOfBuffer Normal
 hi! link SignColumn Normal
 hi! link Pmenu Visual
