@@ -41,7 +41,7 @@ nnoremap <leader>p "+p
 augroup vimrc | autocmd!
     autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>
     autocmd Syntax * syntax sync fromstart
-    autocmd OptionSet shiftwidth let &lcs = 'tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:|' . repeat(' ', &sw - 1)
+    autocmd OptionSet shiftwidth let &lcs = 'tab:> ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:|' . repeat(' ', &sw - 1)
 augroup end
 
 " commands
