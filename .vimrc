@@ -13,6 +13,10 @@ let &t_SI = "\<Esc>[6 q"
 let &t_EI = "\<Esc>[2 q"
 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+let &t_BE = "\e[?2004h"
+let &t_BD = "\e[?2004l"
+exec "set t_PS=\e[200~"
+exec "set t_PE=\e[201~"
 set t_Co=256
 set background=light termguicolors
 colorscheme slate
@@ -20,7 +24,6 @@ colorscheme slate
 noremap k gk
 noremap j gj
 nnoremap ,w :set wrap! wrap?<CR>
-nnoremap ,p :set paste! paste?<CR>
 nnoremap ,r :Scratch<CR>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap Q <nop>
@@ -41,7 +44,7 @@ nnoremap <leader>p "+p
 augroup vimrc | autocmd!
     autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>
     autocmd Syntax * syntax sync fromstart
-    autocmd OptionSet shiftwidth let &lcs = 'tab:> ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:|' . repeat(' ', &sw - 1)
+    autocmd OptionSet <buffer> shiftwidth let &lcs = 'tab:> ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:|' . repeat(' ', &sw - 1)
 augroup end
 
 " commands
@@ -105,6 +108,9 @@ hi MatchParen   ctermfg=203 ctermbg=NONE cterm=underline guifg=#ff6541 guibg=NON
 hi Search       ctermfg=231 ctermbg=197 cterm=NONE guifg=#f8f8f0 guibg=#f92672 gui=NONE
 hi IncSearch    ctermfg=231 ctermbg=197 cterm=underline guifg=#f8f8f0 guibg=#f92672 gui=underline
 hi SpecialKey   ctermfg=240 ctermbg=NONE cterm=NONE guifg=#585858 guibg=NONE gui=NONE
+hi! link TabLine StatusLine
+hi! link TabLineFill StatusLine
+hi! link TabLineSel PmenuSel
 hi! link EndOfBuffer Normal
 hi! link SignColumn Normal
 hi! link Pmenu Visual
@@ -125,7 +131,7 @@ Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'mbbill/undotree'
-Plug 'lambdalisue/vim-fern'
+Plug 'habamax/vim-dir'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'joshdick/onedark.vim'
 call plug#end()
@@ -135,18 +141,8 @@ vnoremap <silent> gbb :TCommentBlock<CR>
 nnoremap <silent> <leader>sh :FZF -i <CR>
 nnoremap <silent> <leader>u :UndotreeToggle<CR>:UndotreeFocus<CR>
 nnoremap <silent> <leader>S :set cuc cul nu<CR>:colo onedark<CR>
-nnoremap - :Fern %:h<CR>
-nnoremap <silent> <leader>- :Fern .<CR>
-
-let g:fern#hide_cursor = 1
-let g:fern#default_hidden = 1
-augroup fern | autocmd!
-    autocmd FileType fern nmap <buffer> - <Plug>(fern-action-leave)
-    autocmd FileType fern nmap <buffer> <TAB> <Plug>(fern-action-mark)
-    autocmd FileType fern nmap <buffer> % <Plug>(fern-action-new-file)
-    autocmd FileType fern nmap <buffer> d <Plug>(fern-action-new-dir)
-    autocmd FileType fern nmap <buffer> D <Plug>(fern-action-remove)
-augroup end
+nnoremap - :Dir<CR>
+nnoremap <silent> <leader>- :Dir .<CR>
 
 " coc
 let g:coc_enable_locationlist = 0
