@@ -5,7 +5,7 @@ set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf
 set nohidden autoread hlsearch incsearch list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|\ \ \ ,
 set nowrap showcmd showmode laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 set path=.,, wildmenu wildoptions=pum updatetime=50 lazyredraw ttyfast ttimeoutlen=50
-set tabstop=4 shiftwidth=4 expandtab smarttab autoindent smartindent scrolloff=8
+set tabstop=4 shiftwidth=4 expandtab smarttab autoindent scrolloff=8
 let $UNDO_DATA = $HOME . '/.vim/undo'
 set undodir=$UNDO_DATA undofile nobackup noswapfile
 
@@ -26,38 +26,29 @@ noremap j gj
 nnoremap ,w :set wrap! wrap?<CR>
 nnoremap ,r :Scratch<CR>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
-nnoremap Q <nop>
-nnoremap gQ <nop>
 nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
+nnoremap <C-p> @:
+set wildcharm=<C-z>
 cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
+cnoremap <expr> <Tab> getcmdtype() =~ '[/?]' ? '<C-g>' : "<C-z>"
+cnoremap <expr> <S-Tab> getcmdtype() =~ '[/?]' ? '<C-t>' : "<S-Tab>"
 
 let mapleader = " "
 nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sh :Files<CR>
-nnoremap <leader>? :OldFiles<CR>
-nnoremap <leader><leader> :b <space>
 nnoremap <silent> - :Ex<CR>
 nnoremap <silent> <leader>- :e .<CR>
+nnoremap <leader><leader> :b <space>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
 
 augroup vimrc | autocmd!
     autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>
     autocmd Syntax * syntax sync fromstart
-    autocmd OptionSet <buffer> shiftwidth let &lcs = 'tab:> ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:|' . repeat(' ', &sw - 1)
+    autocmd OptionSet shiftwidth execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1)
 augroup end
 
-" commands
-command! Scratch if bufexists('scratch') | buffer scratch | else
-            \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 | file scratch | endif
-
-command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
-command! -nargs=0 Files cgetexpr map(systemlist('git ls-files -co --exclude-standard'), 'v:val . ":1:0"') | copen
-command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
-if executable('rg')
-    command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
-endif
-
+" functions
 " Build a regex pattern that matches groups separated by custom delimiters.
 " Usage:
 "   :RegexGroups 3, 2-
@@ -88,10 +79,20 @@ function! RegexGroups(...)
     endif
 endfunction
 
+" commands
+command! Scratch if bufexists('scratch') | buffer scratch | else
+            \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 | file scratch | endif
+
+command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
+command! -nargs=0 Files cgetexpr map(systemlist('git ls-files -co --exclude-standard'), 'v:val . ":1:0"') | copen
+command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
+if executable('rg')
+    command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
+endif
+
 command! -nargs=+ RegexGroups call RegexGroups(<f-args>)
 
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
-" end commands
 
 " colors
 hi Cursor       ctermfg=234 ctermbg=252 guibg=#c6c8d1 guifg=#161821
@@ -105,9 +106,10 @@ hi Folded       ctermbg=235 ctermfg=245 guibg=#1e2132 guifg=#686f9a
 hi Normal       ctermbg=234 ctermfg=252 guibg=#161821 guifg=#c6c8d1
 hi Comment      ctermfg=242 guifg=#6b7089
 hi MatchParen   ctermfg=203 ctermbg=NONE cterm=underline guifg=#ff6541 guibg=NONE gui=underline
-hi Search       ctermfg=231 ctermbg=197 cterm=NONE guifg=#f8f8f0 guibg=#f92672 gui=NONE
 hi IncSearch    ctermfg=231 ctermbg=197 cterm=underline guifg=#f8f8f0 guibg=#f92672 gui=underline
 hi SpecialKey   ctermfg=240 ctermbg=NONE cterm=NONE guifg=#585858 guibg=NONE gui=NONE
+hi Error        ctermfg=167 ctermbg=234 cterm=reverse guifg=#d75f5f guibg=#1c1c1c gui=reverse cterm=reverse
+hi! link ErrorMsg Error
 hi! link TabLine StatusLine
 hi! link TabLineFill StatusLine
 hi! link TabLineSel PmenuSel
@@ -137,7 +139,6 @@ Plug 'joshdick/onedark.vim'
 call plug#end()
 
 nnoremap <silent> <leader>gs :G <CR>
-vnoremap <silent> gbb :TCommentBlock<CR>
 nnoremap <silent> <leader>sh :FZF -i <CR>
 nnoremap <silent> <leader>u :UndotreeToggle<CR>:UndotreeFocus<CR>
 nnoremap <silent> <leader>S :set cuc cul nu<CR>:colo onedark<CR>
@@ -147,6 +148,7 @@ nnoremap <silent> <leader>- :Dir .<CR>
 " coc
 let g:coc_enable_locationlist = 0
 let g:coc_global_extensions = [
+            \ 'coc-git',
             \ 'coc-json',
             \ 'coc-yaml',
             \ 'coc-prettier',
@@ -177,6 +179,8 @@ xmap <leader>a  <Plug>(coc-codeaction-selected)
 nmap <leader>a  <Plug>(coc-codeaction-selected)
 nmap <silent> ]d <Plug>(coc-diagnostic-next)
 nmap <silent> [d <Plug>(coc-diagnostic-prev)
+nmap <silent> <expr> [c &diff ? '[c' : '<Plug>(coc-git-prevchunk)'
+nmap <silent> <expr> ]c &diff ? ']c' : '<Plug>(coc-git-nextchunk)'
 nnoremap <silent><nowait> <leader>td  :<C-u>CocList diagnostics<CR>
 
 nnoremap <silent> K :call CocActionAsync('doHover')<CR>
