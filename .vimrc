@@ -108,6 +108,8 @@ hi MatchParen   ctermfg=203 ctermbg=NONE cterm=underline guifg=#ff6541 guibg=NON
 hi Search       ctermfg=231 ctermbg=197 cterm=NONE guifg=#f8f8f0 guibg=#f92672 gui=NONE
 hi IncSearch    ctermfg=231 ctermbg=197 cterm=underline guifg=#f8f8f0 guibg=#f92672 gui=underline
 hi SpecialKey   ctermfg=240 ctermbg=NONE cterm=NONE guifg=#585858 guibg=NONE gui=NONE
+hi Error        ctermfg=167 ctermbg=234 cterm=reverse guifg=#d75f5f guibg=#1c1c1c gui=reverse cterm=reverse
+hi! link ErrorMsg Error
 hi! link TabLine StatusLine
 hi! link TabLineFill StatusLine
 hi! link TabLineSel PmenuSel
