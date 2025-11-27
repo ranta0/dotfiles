@@ -34,7 +34,7 @@ cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
 let mapleader = " "
 nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sh :Files<CR>
-nnoremap <leader><leader> :LatestOpenedBuffer <space>
+nnoremap <leader>? :LatestOpenedBuffer <space>
 nnoremap <silent> - :Ex<CR>
 nnoremap <silent> <leader>- :e .<CR>
 xnoremap <leader>y "+y
@@ -50,7 +50,7 @@ augroup vimrc | autocmd!
         if !empty(&buftype)
             return
         endif
-        let fname = fnamemodify(bufname(a:bufnr + 0), ':p')
+        let fname = fnamemodify(bufname(a:bufnr + 0), ':~:.')
         if !filereadable(fname)
             return
         endif
