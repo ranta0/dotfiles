@@ -2,10 +2,10 @@ filetype plugin indent on
 syntax enable
 
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf-8,latin
-set nohidden autoread hlsearch incsearch list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|\ \ \ ,
+set nohidden autoread hlsearch incsearch ignorecase smartcase list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|\ \ \ ,
 set nowrap showcmd showmode laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
 set path=.,, wildmenu wildoptions=pum updatetime=50 lazyredraw ttyfast ttimeoutlen=50
-set tabstop=4 shiftwidth=4 expandtab smarttab autoindent scrolloff=8
+set tabstop=4 shiftwidth=4 expandtab smarttab autoindent scrolloff=8 foldmethod=indent foldlevelstart=99
 let $UNDO_DATA = $HOME . '/.vim/undo'
 set undodir=$UNDO_DATA undofile nobackup noswapfile
 
@@ -23,8 +23,11 @@ colorscheme slate
 
 noremap k gk
 noremap j gj
+noremap zj zj_
+noremap zk zk_
 nnoremap ,w :set wrap! wrap?<CR>
 nnoremap ,r :Scratch<CR>
+nnoremap <esc> <cmd>nohls<CR><esc>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
 nnoremap <C-p> @:
@@ -34,7 +37,6 @@ cnoremap <expr> <Tab> getcmdtype() =~ '[/?]' ? '<C-g>' : "<C-z>"
 cnoremap <expr> <S-Tab> getcmdtype() =~ '[/?]' ? '<C-t>' : "<S-Tab>"
 
 let mapleader = " "
-nmap <silent> <leader>/ :let @/ = ""<CR>
 nnoremap <leader>sh :Files<CR>
 nnoremap <silent> - :Ex<CR>
 nnoremap <silent> <leader>- :e .<CR>
