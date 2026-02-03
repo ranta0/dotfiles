@@ -4,7 +4,7 @@ syntax enable
 set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf-8,latin
 set nohidden autoread hlsearch incsearch ignorecase smartcase list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|\ \ \ ,
 set nowrap showcmd showmode laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
-set path=.,, wildmenu wildoptions=pum updatetime=50 lazyredraw ttyfast ttimeoutlen=50
+set path=.,, wildmenu wildoptions=pum updatetime=50 lazyredraw ttyfast ttimeoutlen=50 noequalalways
 set tabstop=4 shiftwidth=4 expandtab smarttab autoindent scrolloff=8 foldmethod=indent foldlevelstart=99
 let $UNDO_DATA = $HOME . '/.vim/undo'
 set undodir=$UNDO_DATA undofile nobackup noswapfile
@@ -26,7 +26,6 @@ noremap zj zj_
 noremap zk zk_
 nnoremap ,w :set wrap! wrap?<CR>
 nnoremap ,r :Scratch<CR>
-nnoremap <esc> <cmd>nohls<CR><esc>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
 nnoremap <C-p> @:
@@ -34,6 +33,7 @@ set wildcharm=<C-z>
 cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
 cnoremap <expr> <Tab> getcmdtype() =~ '[/?]' ? '<C-g>' : "<C-z>"
 cnoremap <expr> <S-Tab> getcmdtype() =~ '[/?]' ? '<C-t>' : "<S-Tab>"
+vnoremap gss :LinesSplit<CR>
 
 let mapleader = " "
 nnoremap <leader>sh :Files<CR>
@@ -42,6 +42,7 @@ nnoremap <silent> <leader>- :e .<CR>
 nnoremap <leader><leader> :b <space>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
+nnoremap <leader>/ :nohls<CR>
 
 " functions
 " Build a regex pattern that matches groups separated by custom delimiters.
@@ -115,6 +116,9 @@ endif
 
 command! -nargs=+ RegexGroups call RegexGroups(<f-args>)
 
+command! -range LinesSplit let len = <line2> - <line1> + 1 | wincmd s | exec "resize" . len
+            \ | let so = &so | let &so = 0 | call cursor(<line1>, 0) | exec "normal! ztM" | let &so = so | wincmd j
+
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 
 augroup vimrc | autocmd!
@@ -152,6 +156,8 @@ nnoremap <silent> <leader>- :Dir .<CR>
 " coc
 let g:coc_enable_locationlist = 0
 let g:coc_global_extensions = [
+            \ 'coc-lists',
+            \ 'coc-marketplace',
             \ 'coc-git',
             \ 'coc-json',
             \ 'coc-yaml',
