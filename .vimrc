@@ -1,44 +1,31 @@
-filetype plugin indent on
-syntax enable
-
-set encoding=utf-8 fileencoding=utf-8 fileformats=unix,mac,dos fileencodings=utf-8,latin
-set nohidden autoread hlsearch incsearch ignorecase smartcase list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|\ \ \ ,
-set nowrap showcmd showmode laststatus=2 signcolumn=yes statusline=%<%.99f\ %h%w%m%r%=%y\ %{&fenc!=#''?&fenc:'none'}\ %{&ff}\ %P
-set path=.,, wildmenu wildoptions=pum updatetime=50 lazyredraw ttyfast ttimeoutlen=50 noequalalways
-set tabstop=4 shiftwidth=4 expandtab smarttab autoindent scrolloff=8 foldmethod=indent foldlevelstart=99
-let $UNDO_DATA = $HOME . '/.vim/undo'
-set undodir=$UNDO_DATA undofile nobackup noswapfile
-
+unlet! skip_defaults_vim
+so $VIMRUNTIME/defaults.vim
+au! vimHints
 let &t_SI = "\<Esc>[6 q"
 let &t_EI = "\<Esc>[2 q"
-let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
-let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
-let &t_BE = "\e[?2004h"
-let &t_BD = "\e[?2004l"
-exec "set t_PS=\e[200~"
-exec "set t_PE=\e[201~"
-set t_Co=256
-set background=dark termguicolors
+
+set nohidden autoread hls ignorecase smartcase list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
+set updatetime=50 lazyredraw ttyfast nowrap ts=4 sw=4 et sta ai wildoptions=pum ve=block
+let $UNDO_DATA = $HOME . '/.vim/undo'
+set undodir=$UNDO_DATA undofile nobackup noswapfile laststatus=2 signcolumn=yes
+set t_Co=256 background=dark termguicolors
 
 noremap k gk
 noremap j gj
-nnoremap ]q :cn<CR>
-nnoremap [q :cN<CR>
-nnoremap ,w :set wrap! wrap?<CR>
-nnoremap ,r :Scratch<CR>
+nnoremap ]q :<C-u>cn<CR>
+nnoremap [q :<C-u>cN<CR>
+nnoremap ,w :<C-u>set wrap! wrap?<CR>
+nnoremap ,r :<C-u>Scratch<CR>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
-set wildcharm=<C-z>
 cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
-cnoremap <expr> <Tab> getcmdtype() =~ '[/?]' ? '<C-g>' : "<C-z>"
-cnoremap <expr> <S-Tab> getcmdtype() =~ '[/?]' ? '<C-t>' : "<S-Tab>"
 
 let mapleader = " "
 nnoremap <silent> - :Ex<CR>
 nnoremap <leader><leader> :b <space>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
-nnoremap <leader>/ :nohls<CR>
+nnoremap <silent> <leader>/ :nohls<CR>
 
 " functions
 " Build a regex pattern that matches groups separated by custom delimiters.
@@ -71,37 +58,11 @@ function! RegexGroups(...)
     endif
 endfunction
 
-function! BetterSlate()
-    hi Cursor       ctermfg=234 ctermbg=252 guibg=#c6c8d1 guifg=#161821
-    hi Visual       ctermfg=NONE ctermbg=236 cterm=NONE guibg=#272c42 guifg=NONE
-    hi VertSplit    ctermbg=233 ctermfg=233 cterm=NONE guibg=#0f1117 guifg=#0f1117 gui=NONE
-    hi StatusLine   ctermbg=234 ctermfg=245 cterm=reverse guibg=#17171b guifg=#818596 gui=reverse term=reverse
-    hi StatusLineNC ctermbg=238 ctermfg=233 cterm=reverse guibg=#3e445e guifg=#0f1117 gui=reverse
-    hi PmenuSel     ctermbg=240 ctermfg=255 guibg=#5b6389 guifg=#eff0f4
-    hi Directory    ctermfg=109 guifg=#89b8c2
-    hi Folded       ctermbg=235 ctermfg=245 guibg=#1e2132 guifg=#686f9a
-    hi Normal       ctermbg=234 ctermfg=252 guibg=#161821 guifg=#c6c8d1
-    hi Comment      ctermfg=242 guifg=#6b7089
-    hi MatchParen   ctermfg=203 ctermbg=NONE cterm=underline guifg=#ff6541 guibg=NONE gui=underline
-    hi IncSearch    ctermfg=231 ctermbg=197 cterm=underline guifg=#f8f8f0 guibg=#f92672 gui=underline
-    hi SpecialKey   ctermfg=240 ctermbg=NONE cterm=NONE guifg=#585858 guibg=NONE gui=NONE
-    hi Error        ctermfg=167 ctermbg=234 cterm=reverse guifg=#d75f5f guibg=#1c1c1c gui=reverse cterm=reverse
-    hi! link ErrorMsg Error
-    hi! link TabLine StatusLine
-    hi! link TabLineFill StatusLine
-    hi! link TabLineSel PmenuSel
-    hi! link EndOfBuffer Normal
-    hi! link SignColumn Normal
-    hi! link Pmenu Visual
-    hi! link PmenuThumb Search
-    hi! link CurSearch IncSearch
-    hi! link StatusLineTerm StatusLine
-    hi! link StatusLineTermNC StatusLineNC
-endfunction
-
 " commands
 command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 | file scratch | endif
+command! -nargs=+ RegexGroups call RegexGroups(<f-args>)
+command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
 command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
@@ -109,15 +70,21 @@ if executable('rg')
     command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
 endif
 
-command! -nargs=+ RegexGroups call RegexGroups(<f-args>)
-
-command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
-
+let g:auto_guidelines = 1
+let g:line_status = 1
 augroup vimrc | autocmd!
     autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>
     autocmd Syntax * syntax sync fromstart
-    autocmd OptionSet shiftwidth execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1)
-    autocmd ColorScheme slate call BetterSlate()
+    autocmd OptionSet shiftwidth if g:auto_guidelines | execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1) | endif
+    autocmd ColorScheme * if g:line_status
+                \ | set fillchars+=stl:-,stlnc:-
+                \ | hi StatusLine   cterm=bold guibg=NONE guifg=#c0c0c0
+                \ | hi StatusLineNC cterm=NONE guibg=NONE guifg=#c0c0c0
+                \ | hi! link CurSearch IncSearch
+                \ | hi! link VertSplit StatusLineNC
+                \ | hi! link EndOfBuffer Normal
+                \ | hi! link SignColumn Normal
+                \ | endif
 augroup end
 colorscheme slate
 
@@ -141,7 +108,6 @@ call plug#end()
 nnoremap <silent> <leader>gs :G <CR>
 nnoremap <silent> <leader>sh :FZF -i <CR>
 nnoremap <silent> <leader>u :UndotreeToggle<CR>:UndotreeFocus<CR>
-nnoremap <silent> <leader>S :set cuc cul nu<CR>:colo onedark<CR>
 nnoremap - :Dir<CR>
 nnoremap <silent> <leader>- :Dir .<CR>
 
