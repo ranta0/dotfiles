@@ -14,10 +14,13 @@ noremap k gk
 noremap j gj
 nnoremap ]q :<C-u>cn<CR>
 nnoremap [q :<C-u>cN<CR>
+nnoremap ]w :<C-u>lnext<CR>
+nnoremap [w :<C-u>lprev<CR>
 nnoremap ,w :<C-u>set wrap! wrap?<CR>
 nnoremap ,r :<C-u>Scratch<CR>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
+nnoremap <silent> \ :<C-u>LGrep <C-R><C-w><CR>
 cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
 
 let mapleader = " "
@@ -65,6 +68,7 @@ command! -nargs=+ RegexGroups call RegexGroups(<f-args>)
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
+command! -nargs=1 LGrep exe $'lvim /\V{escape(<q-args>, '\')}/ %' | lopen
 command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
 if executable('rg')
     command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
@@ -73,7 +77,7 @@ endif
 let g:auto_guidelines = 1
 let g:line_status = 1
 augroup vimrc | autocmd!
-    autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>
+    autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>:lclose<CR>
     autocmd Syntax * syntax sync fromstart
     autocmd OptionSet shiftwidth if g:auto_guidelines | execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1) | endif
     autocmd ColorScheme * if g:line_status
