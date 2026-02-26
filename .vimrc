@@ -5,7 +5,7 @@ let &t_SI = "\<Esc>[6 q"
 let &t_EI = "\<Esc>[2 q"
 
 set nohidden autoread hls ignorecase smartcase list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-set updatetime=50 lazyredraw ttyfast nowrap ts=4 sw=4 et sta ai wildoptions=pum ve=block
+set updatetime=50 lazyredraw ttyfast nowrap ts=4 sw=4 et sta ai wildoptions=pum ve=block belloff=all
 let $UNDO_DATA = $HOME . '/.vim/undo'
 set undodir=$UNDO_DATA undofile nobackup noswapfile laststatus=2 signcolumn=yes
 set t_Co=256 background=dark termguicolors
@@ -17,6 +17,7 @@ nnoremap [q :<C-u>cN<CR>
 nnoremap ]w :<C-u>lnext<CR>
 nnoremap [w :<C-u>lprev<CR>
 nnoremap ,w :<C-u>set wrap! wrap?<CR>
+nnoremap ,s :<C-u>set spell! spell?<CR>
 nnoremap ,r :<C-u>Scratch<CR>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
@@ -66,9 +67,11 @@ command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 | file scratch | endif
 command! -nargs=+ RegexGroups call RegexGroups(<f-args>)
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
+command! -nargs=0 CamelCase s/\v_([a-z])/\u\1/gc
+command! -nargs=0 SnakeCase s/\v([a-z])([A-Z])/\L\1_\2/gc
 
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
-command! -nargs=1 LGrep exe $'lvim /\V{escape(<q-args>, '\')}/ %' | lopen
+command! -nargs=1 LGrep exe 'lvim /\V<args>/j %' | lopen
 command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
 if executable('rg')
     command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
