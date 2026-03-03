@@ -19,7 +19,10 @@ nnoremap [w :<C-u>lprev<CR>
 nnoremap ,w :<C-u>set wrap! wrap?<CR>
 nnoremap ,s :<C-u>set spell! spell?<CR>
 nnoremap ,r :<C-u>Scratch<CR>
+nnoremap gj i<c-j><esc>k$
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
+nnoremap <expr><silent> m ":mark " . toupper(getcharstr()) . "<CR>"
+nnoremap <expr><silent> ' ":normal! `" . toupper(getcharstr()) . "<CR>'\""
 nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
 nnoremap <silent> \ :<C-u>LGrep <C-R><C-w><CR>
 cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
@@ -73,25 +76,22 @@ command! -nargs=0 SnakeCase s/\v([a-z])([A-Z])/\L\1_\2/gc
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
 command! -nargs=1 LGrep exe 'lvim /\V<args>/j %' | lopen
 command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
+command! -nargs=0 Marks cgetexpr map(getmarklist(), 'v:val.file . ":" . v:val.pos[2] . ":" . v:val.mark') | copen | winc p
 if executable('rg')
     command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
 endif
 
-let g:auto_guidelines = 1
-let g:line_status = 1
 augroup vimrc | autocmd!
     autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>:lclose<CR>
     autocmd Syntax * syntax sync fromstart
-    autocmd OptionSet shiftwidth if g:auto_guidelines | execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1) | endif
-    autocmd ColorScheme * if g:line_status
-                \ | set fillchars+=stl:-,stlnc:-
+    autocmd OptionSet shiftwidth execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1)
+    autocmd ColorScheme * set fillchars+=stl:-,stlnc:-
                 \ | hi StatusLine   cterm=bold guibg=NONE guifg=#c0c0c0
                 \ | hi StatusLineNC cterm=NONE guibg=NONE guifg=#c0c0c0
                 \ | hi! link CurSearch IncSearch
                 \ | hi! link VertSplit StatusLineNC
                 \ | hi! link EndOfBuffer Normal
                 \ | hi! link SignColumn Normal
-                \ | endif
 augroup end
 colorscheme slate
 
