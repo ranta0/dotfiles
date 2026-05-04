@@ -14,67 +14,26 @@ noremap k gk
 noremap j gj
 nnoremap ]q :<C-u>cn<CR>
 nnoremap [q :<C-u>cN<CR>
-nnoremap ]w :<C-u>lnext<CR>
-nnoremap [w :<C-u>lprev<CR>
 nnoremap ,w :<C-u>set wrap! wrap?<CR>
 nnoremap ,s :<C-u>set spell! spell?<CR>
 nnoremap ,r :<C-u>Scratch<CR>
-nnoremap gj i<c-j><esc>k$
+nnoremap \\ <C-^>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap <expr><silent> m ":mark " . toupper(getcharstr()) . "<CR>"
 nnoremap <expr><silent> ' ":normal! `" . toupper(getcharstr()) . "<CR>'\""
 nnoremap <silent> g] :<C-u>Grep <C-R><C-w><CR>
-nnoremap <silent> \ :<C-u>LGrep <C-R><C-w><CR>
 cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
 
 let mapleader = " "
 nnoremap <silent> - :Ex<CR>
-nnoremap <leader><leader> :b <space>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
 nnoremap <silent> <leader>/ :nohls<CR>
 
-" functions
-" Build a regex pattern that matches groups separated by custom delimiters.
-" Usage:
-"   :RegexGroups 3, 2-
-" Produces a pattern like: v^([^,]*,[^,]*,[^,]*),([^-]*-[^-]*)-(.*)
-function! RegexGroups(...)
-    let search = ""
-    let max = 1
-    for attr in a:000
-        if max >= 9
-            echoerr "too many args"
-            break
-        endif
-        let number = matchstr(attr, '\v(\d+)')
-        let delimiter = substitute(attr, '\v(\d+)', '', 'g')
-        let matchable = '[^' . delimiter . ']*'
-        let group = matchable
-        if number != ''
-            for i in range(1, number - 1)
-                let group .= delimiter . matchable
-            endfor
-        endif
-        let searchable = '(' . group . ')' . delimiter
-        let max += 1
-        let search .= searchable
-    endfor
-    if max <= 9
-        let @/ = '\v^' . search . '(.*)'
-    endif
-endfunction
-
-" commands
 command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 | file scratch | endif
-command! -nargs=+ RegexGroups call RegexGroups(<f-args>)
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
-command! -nargs=0 CamelCase s/\v_([a-z])/\u\1/gc
-command! -nargs=0 SnakeCase s/\v([a-z])([A-Z])/\L\1_\2/gc
-
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
-command! -nargs=1 LGrep exe 'lvim /\V<args>/j %' | lopen
 command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
 command! -nargs=0 Marks cgetexpr map(getmarklist(), 'v:val.file . ":" . v:val.pos[2] . ":" . v:val.mark') | copen | winc p
 if executable('rg')
@@ -107,16 +66,20 @@ Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'mbbill/undotree'
-Plug 'habamax/vim-dir'
+Plug 'Ashik80/VimExplorer'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'joshdick/onedark.vim'
 call plug#end()
+colorscheme onedark
 
 nnoremap <silent> <leader>gs :G <CR>
 nnoremap <silent> <leader>sh :FZF -i <CR>
 nnoremap <silent> <leader>u :UndotreeToggle<CR>:UndotreeFocus<CR>
-nnoremap - :Dir<CR>
-nnoremap <silent> <leader>- :Dir .<CR>
+
+let g:vimexplorer_show_hidden = 1
+let g:vimexplorer_detail = 0
+nnoremap - :VimExplorer<CR>
+nnoremap <silent> <leader>- :VimExplorerCwd<CR>
 
 " coc
 let g:coc_enable_locationlist = 0
