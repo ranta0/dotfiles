@@ -39,6 +39,10 @@ command! -nargs=0 Marks cgetexpr map(getmarklist(), 'v:val.file . ":" . v:val.po
 if executable('rg')
     command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
 endif
+" thanks to https://github.com/gcmt/dotfiles
+command! -nargs=1 RegisterEdit let reg = <q-args> | exec 'sil keepj botright 5new register_edit_' . reg
+            \ | setlocal bt=nofile bh=wipe noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8
+            \ | call append(0, getreg(reg, 1, 1)) | exec 'sil norm! "_dd' | au Bufwipeout <buffer> call setreg(reg, join(getline(0, "$"), "\n"))
 
 augroup vimrc | autocmd!
     autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>:lclose<CR>
