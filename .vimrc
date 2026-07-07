@@ -1,15 +1,14 @@
-unlet! skip_defaults_vim
-so $VIMRUNTIME/defaults.vim
-au! vimHints
 let &t_SI = "\<Esc>[6 q"
 let &t_EI = "\<Esc>[2 q"
 
+set ttimeout ttimeoutlen=100 scrolloff=5 incsearch
 set nohidden autoread hls ignorecase smartcase list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 set updatetime=50 lazyredraw ttyfast nowrap ts=4 sw=4 et sta ai wildoptions=pum ve=block belloff=all
 let $UNDO_DATA = $HOME . '/.vim/undo'
 set undodir=$UNDO_DATA undofile nobackup noswapfile laststatus=2 signcolumn=yes
 set t_Co=256 background=dark termguicolors
 
+map Q gq
 noremap k gk
 noremap j gj
 nnoremap ]q :<C-u>cn<CR>
@@ -17,7 +16,6 @@ nnoremap [q :<C-u>cN<CR>
 nnoremap ,w :<C-u>set wrap! wrap?<CR>
 nnoremap ,s :<C-u>set spell! spell?<CR>
 nnoremap ,r :<C-u>Scratch<CR>
-nnoremap \\ <C-^>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap <expr><silent> m ":mark " . toupper(getcharstr()) . "<CR>"
 nnoremap <expr><silent> ' ":normal! `" . toupper(getcharstr()) . "<CR>'\""
@@ -33,21 +31,25 @@ nnoremap <silent> <leader>/ :nohls<CR>
 command! Scratch if bufexists('scratch') | buffer scratch | else
             \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 | file scratch | endif
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
+command! -nargs=0 SetListChars execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1)
+
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
-command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'v:val . ":1:0"') | copen
-command! -nargs=0 Marks cgetexpr map(getmarklist(), 'v:val.file . ":" . v:val.pos[2] . ":" . v:val.mark') | copen | winc p
+command! -nargs=0 Files cgetexpr map(systemlist('git ls-files -co --exclude-standard'), 'v:val . ":1:0"') | copen
+command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'fnamemodify(v:val, ".") . ":1:0"') | copen
+command! -nargs=0 Marks cgetexpr map(getmarklist(), 'fnamemodify(v:val.file, ".") . ":" . v:val.pos[2] . ":" . v:val.mark') | copen
 if executable('rg')
     command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
 endif
 " thanks to https://github.com/gcmt/dotfiles
-command! -nargs=1 RegisterEdit let reg = <q-args> | exec 'sil keepj botright 5new register_edit_' . reg
+command! -nargs=1 RegisterEdit let reg = <q-args> | exec 'sil keepj botright new register_edit_' . reg
             \ | setlocal bt=nofile bh=wipe noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8
             \ | call append(0, getreg(reg, 1, 1)) | exec 'sil norm! "_dd' | au Bufwipeout <buffer> call setreg(reg, join(getline(0, "$"), "\n"))
 
 augroup vimrc | autocmd!
-    autocmd filetype qf nnoremap <silent><buffer> i <CR>:cclose<CR>:lclose<CR>
-    autocmd Syntax * syntax sync fromstart
-    autocmd OptionSet shiftwidth execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1)
+    autocmd FileType qf execute 'resize ' . float2nr(&lines/2) | setlocal nu | nnoremap <silent><buffer> i <CR>:cclose<CR>:lclose<CR>
+    autocmd CmdWinEnter * execute 'resize ' . float2nr(&lines/2) | setlocal nu
+    autocmd Syntax * syntax sync fromstart | SetListChars
+    autocmd OptionSet shiftwidth SetListChars
     autocmd ColorScheme * set fillchars+=stl:-,stlnc:-
                 \ | hi StatusLine   cterm=bold guibg=NONE guifg=#c0c0c0
                 \ | hi StatusLineNC cterm=NONE guibg=NONE guifg=#c0c0c0
