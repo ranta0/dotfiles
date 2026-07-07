@@ -1,7 +1,10 @@
+filetype plugin indent on
+syntax on
+
 let &t_SI = "\<Esc>[6 q"
 let &t_EI = "\<Esc>[2 q"
 
-set ttimeout ttimeoutlen=100 scrolloff=5 incsearch
+set ttimeout ttimeoutlen=100 scrolloff=5 incsearch ruler wildmenu history=200 backspace=indent,eol,start
 set nohidden autoread hls ignorecase smartcase list listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 set updatetime=50 lazyredraw ttyfast nowrap ts=4 sw=4 et sta ai wildoptions=pum ve=block belloff=all
 let $UNDO_DATA = $HOME . '/.vim/undo'
