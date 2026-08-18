@@ -27,17 +27,19 @@ cnoremap <expr> <space> getcmdtype() =~ '[/?]' ? '.\{-}' : "<space>"
 
 let mapleader = " "
 nnoremap <silent> - :Ex<CR>
+nnoremap <silent> <leader>- :e .<CR>
 xnoremap <leader>y "+y
 nnoremap <leader>p "+p
 nnoremap <silent> <leader>/ :nohls<CR>
 
 command! Scratch if bufexists('scratch') | buffer scratch | else
-            \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 | file scratch | endif
+            \ | enew | setlocal bt=nofile bh=hide noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8 filetype=scratch | file scratch | endif
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 command! -nargs=0 SetListChars execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1)
 
+command! -nargs=1 Del call delete(<f-args>, 'rf') | exec "norm <C-l>"
+command! -nargs=0 Files exec ":Scratch" | silent %delete _ | call append(0, globpath('.', '{**/*,**/.*}', 0, 1)->filter('!isdirectory(v:val)')) | exec "sil norm! gg"
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
-command! -nargs=0 Files cgetexpr map(systemlist('git ls-files -co --exclude-standard'), 'v:val . ":1:0"') | copen
 command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'fnamemodify(v:val, ".") . ":1:0"') | copen
 command! -nargs=0 Marks cgetexpr map(getmarklist(), 'fnamemodify(v:val.file, ".") . ":" . v:val.pos[2] . ":" . v:val.mark') | copen
 if executable('rg')
@@ -49,6 +51,8 @@ command! -nargs=1 RegisterEdit let reg = <q-args> | exec 'sil keepj botright new
             \ | call append(0, getreg(reg, 1, 1)) | exec 'sil norm! "_dd' | au Bufwipeout <buffer> call setreg(reg, join(getline(0, "$"), "\n"))
 
 augroup vimrc | autocmd!
+    autocmd FileType netrw nnoremap <silent><buffer> yy :let @+ = b:netrw_curdir . '/' . getline('.')<CR>
+    autocmd BufWritePre * call mkdir(expand('<afile>:p:h'), 'p')
     autocmd FileType qf execute 'resize ' . float2nr(&lines/2) | setlocal nu | nnoremap <silent><buffer> i <CR>:cclose<CR>:lclose<CR>
     autocmd CmdWinEnter * execute 'resize ' . float2nr(&lines/2) | setlocal nu
     autocmd Syntax * syntax sync fromstart | SetListChars
@@ -75,7 +79,6 @@ Plug 'tpope/vim-sleuth'
 Plug 'tomtom/tcomment_vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'mbbill/undotree'
-Plug 'Ashik80/VimExplorer'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'joshdick/onedark.vim'
 call plug#end()
@@ -84,11 +87,6 @@ colorscheme onedark
 nnoremap <silent> <leader>gs :G <CR>
 nnoremap <silent> <leader>sh :FZF -i <CR>
 nnoremap <silent> <leader>u :UndotreeToggle<CR>:UndotreeFocus<CR>
-
-let g:vimexplorer_show_hidden = 1
-let g:vimexplorer_detail = 0
-nnoremap - :VimExplorer<CR>
-nnoremap <silent> <leader>- :VimExplorerCwd<CR>
 
 " coc
 let g:coc_enable_locationlist = 0
