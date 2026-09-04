@@ -1,3 +1,4 @@
+" vim: set sw=4
 filetype plugin indent on
 syntax on
 
@@ -37,18 +38,49 @@ command! Scratch if bufexists('scratch') | buffer scratch | else
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 command! -nargs=0 SetListChars execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1)
 
+" thanks to https://github.com/gcmt/dotfiles
+command! -nargs=1 RegisterEdit call EditBuffer('register_edit_' . <f-args>, getreg(<f-args>, 1, 1), function('WipeoutRegister', [<f-args>]))
+
 command! -nargs=1 Del call delete(<f-args>, 'rf') | exec "norm <C-l>"
-command! -nargs=0 Files exec ":Scratch" | silent %delete _ | call append(0, globpath('.', '{**/*,**/.*}', 0, 1)->filter('!isdirectory(v:val)')) | exec "sil norm! gg"
+command! -nargs=1 Rename call EditBuffer('rename_file_' . <f-args>, <f-args>, function('WipeoutRename', [<f-args>]))
+command! -nargs=1 Copy call EditBuffer('copy_' . <f-args>, <f-args>, function('WipeoutCopy', [<f-args>]))
+
+command! -nargs=0 Files exec ":Scratch" | silent %delete _ | call append(0, globpath('*', '**/*', 0, 1)->filter('!isdirectory(v:val)')) | exec "sil norm! gg"
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
 command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'fnamemodify(v:val, ".") . ":1:0"') | copen
 command! -nargs=0 Marks cgetexpr map(getmarklist(), 'fnamemodify(v:val.file, ".") . ":" . v:val.pos[2] . ":" . v:val.mark') | copen
 if executable('rg')
     command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
 endif
-" thanks to https://github.com/gcmt/dotfiles
-command! -nargs=1 RegisterEdit let reg = <q-args> | exec 'sil keepj botright new register_edit_' . reg
-            \ | setlocal bt=nofile bh=wipe noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8
-            \ | call append(0, getreg(reg, 1, 1)) | exec 'sil norm! "_dd' | au Bufwipeout <buffer> call setreg(reg, join(getline(0, "$"), "\n"))
+
+fun! EditBuffer(name, content, on_wipeout)
+    exec 'sil keepj botright new ' . a:name
+    setlocal bt=nofile bh=wipe noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8
+    call append(0, a:content) | exec 'sil norm! "_dd'
+    let b:on_wipeout = a:on_wipeout
+
+    fun! s:handleWipeOut()
+        if exists('b:on_wipeout') && !empty('b:on_wipeout')
+            if confirm('Save changes?', "&Yes\n&No", 1) == 1
+                call call(b:on_wipeout, [])
+            endif
+        endif
+        let b:on_wipeout = ''
+    endfun
+    au BufWipeOut <buffer> call s:handleWipeOut()
+endfun
+
+fun! WipeoutRegister(reg)
+    call setreg(a:reg, join(getline(0, "$"), "\n"))
+endfun
+fun! WipeoutRename(name)
+    let renamed = join(getline(0, "$"), "\n") | call mkdir(fnamemodify(renamed, ':p:h'), 'p')
+    call rename(a:name, renamed)
+endfun
+fun! WipeoutCopy(source)
+    let dest = join(getline(0, "$"), "\n") | call mkdir(fnamemodify(dest, ':p:h'), 'p')
+    let result = system("cp -r " . a:source . " " . dest)
+endfun
 
 augroup vimrc | autocmd!
     autocmd FileType netrw nnoremap <silent><buffer> yy :let @+ = b:netrw_curdir . '/' . getline('.')<CR>
