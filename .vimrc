@@ -74,11 +74,11 @@ fun! WipeoutRegister(reg)
     call setreg(a:reg, join(getline(0, "$"), "\n"))
 endfun
 fun! WipeoutRename(name)
-    let renamed = join(getline(0, "$"), "\n") | call mkdir(fnamemodify(renamed, ':p:h'), 'p')
+    let renamed = getline(1) | call mkdir(fnamemodify(renamed, ':p:h'), 'p')
     call rename(a:name, renamed)
 endfun
 fun! WipeoutCopy(source)
-    let dest = join(getline(0, "$"), "\n") | call mkdir(fnamemodify(dest, ':p:h'), 'p')
+    let dest = getline(1) | call mkdir(fnamemodify(dest, ':p:h'), 'p')
     let result = system("cp -r " . a:source . " " . dest)
 endfun
 
