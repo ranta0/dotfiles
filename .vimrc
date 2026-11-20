@@ -18,7 +18,6 @@ noremap j gj
 nnoremap ]q :<C-u>cn<CR>
 nnoremap [q :<C-u>cN<CR>
 nnoremap ,w :<C-u>set wrap! wrap?<CR>
-nnoremap ,s :<C-u>set spell! spell?<CR>
 nnoremap ,r :<C-u>Scratch<CR>
 nnoremap <expr> ,d ":" . (&diff ? "diffoff" : "diffthis") . "<CR>"
 nnoremap <expr><silent> m ":mark " . toupper(getcharstr()) . "<CR>"
@@ -38,14 +37,7 @@ command! Scratch if bufexists('scratch') | buffer scratch | else
 command! RemoveWhiteSpaces if mode() ==# 'n' | silent! keeppatterns keepjumps execute 'undojoin | %s/[ \t]\+$//g' | update | endif
 command! -nargs=0 SetListChars execute 'setlocal listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+,leadmultispace:\|' . repeat('\ ', &sw - 1)
 
-" thanks to https://github.com/gcmt/dotfiles
-command! -nargs=1 RegisterEdit call EditBuffer('register_edit_' . <f-args>, getreg(<f-args>, 1, 1), function('WipeoutRegister', [<f-args>]))
-
-command! -nargs=1 Del call delete(<f-args>, 'rf') | exec "norm <C-l>"
-command! -nargs=1 Rename call EditBuffer('rename_file_' . <f-args>, <f-args>, function('WipeoutRename', [<f-args>]))
-command! -nargs=1 Copy call EditBuffer('copy_' . <f-args>, <f-args>, function('WipeoutCopy', [<f-args>]))
-
-command! -nargs=0 Files exec ":Scratch" | silent %delete _ | call append(0, globpath('*', '**/*', 0, 1)->filter('!isdirectory(v:val)')) | exec "sil norm! gg"
+command! -nargs=+ -complete=file Sh echo system('<args>') | exec "norm <C-l>"
 command! -nargs=+ Grep cgetexpr system('git grep -rnH <args> ') | copen
 command! -nargs=0 OldFiles cgetexpr map(v:oldfiles, 'fnamemodify(v:val, ".") . ":1:0"') | copen
 command! -nargs=0 Marks cgetexpr map(getmarklist(), 'fnamemodify(v:val.file, ".") . ":" . v:val.pos[2] . ":" . v:val.mark') | copen
@@ -53,40 +45,11 @@ if executable('rg')
     command! -nargs=+ Grep cgetexpr system('rg --vimgrep --hidden --no-heading --color=never --no-ignore <args> ') | copen
 endif
 
-fun! EditBuffer(name, content, on_wipeout)
-    exec 'sil keepj botright new ' . a:name
-    setlocal bt=nofile bh=wipe noswapfile nowritebackup noundofile noautoread ff=unix fenc=utf-8
-    call append(0, a:content) | exec 'sil norm! "_dd'
-    let b:on_wipeout = a:on_wipeout
-
-    fun! s:handleWipeOut()
-        if exists('b:on_wipeout') && !empty('b:on_wipeout')
-            if confirm('Save changes?', "&Yes\n&No", 1) == 1
-                call call(b:on_wipeout, [])
-            endif
-        endif
-        let b:on_wipeout = ''
-    endfun
-    au BufWipeOut <buffer> call s:handleWipeOut()
-endfun
-
-fun! WipeoutRegister(reg)
-    call setreg(a:reg, join(getline(0, "$"), "\n"))
-endfun
-fun! WipeoutRename(name)
-    let renamed = getline(1) | call mkdir(fnamemodify(renamed, ':p:h'), 'p')
-    call rename(a:name, renamed)
-endfun
-fun! WipeoutCopy(source)
-    let dest = getline(1) | call mkdir(fnamemodify(dest, ':p:h'), 'p')
-    let result = system("cp -r " . a:source . " " . dest)
-endfun
-
 augroup vimrc | autocmd!
-    autocmd FileType netrw nnoremap <silent><buffer> yy :let @+ = b:netrw_curdir . '/' . getline('.')<CR>
+    autocmd FileType netrw nnoremap <silent><buffer> Y :let @+ = b:netrw_curdir . '/' . getline('.')<CR>
     autocmd BufWritePre * call mkdir(expand('<afile>:p:h'), 'p')
-    autocmd FileType qf execute 'resize ' . float2nr(&lines/2) | setlocal nu | nnoremap <silent><buffer> i <CR>:cclose<CR>:lclose<CR>
-    autocmd CmdWinEnter * execute 'resize ' . float2nr(&lines/2) | setlocal nu
+    autocmd FileType qf execute 'resize ' . float2nr(&lines/3) | setlocal nu | nnoremap <silent><buffer> i <CR>:cclose<CR>:lclose<CR>
+    autocmd CmdWinEnter * execute 'resize ' . float2nr(&lines/3) | setlocal nu
     autocmd Syntax * syntax sync fromstart | SetListChars
     autocmd OptionSet shiftwidth SetListChars
     autocmd ColorScheme * set fillchars+=stl:-,stlnc:-
